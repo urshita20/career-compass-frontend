@@ -10,6 +10,7 @@ import { InternshipHub } from "@/app/components/internship-hub";
 import { ResourceLibrary } from "@/app/components/resource-library";
 import { SkillGapTool } from "@/app/components/skill-gap-tool";
 import { careerPaths, CareerPath } from "@/app/components/career-data";
+import { submitAssessment } from "@/app/components/api-service";
 import { getCareerSuggestions } from "@/app/components/api-service";
 
 type View = "home" | "assessment" | "results" | "explorer" | "learning" | "market" | "internships" | "resources" | "skillgap";
@@ -33,55 +34,55 @@ function App() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const handleAssessmentComplete = async (answers: SwipeAnswers) => {
-  // Determine interest based on swipe answers
-  // You can improve this logic later based on actual answer analysis
-  let interest = "technology";
-  let subject = "mathematics";
-  let classLevel = "11";
-  
+ const handleAssessmentComplete = async (answers: SwipeAnswers) => {
   try {
-    // Call your backend API
-    const recommendations = await getCareerSuggestions(interest, subject, classLevel);
+    // Call backend API with assessment answers
+    const { careers, aiInsight } = await submitAssessment(answers);
     
-    // Add match scores to the careers from backend
-    const careersWithScores = recommendations.map((career) => ({
-      ...career,
-      category: career.stream || "General", // Map stream to category
-      icon: "💼", // Default icon, you can customize later
-      matchScore: Math.floor(Math.random() * 30) + 70, // 70-100 range
-    }));
+    if (careers.length > 0) {
+      // Map backend careers to frontend format
+      const formattedCareers = careers.map((career) => ({
+        id: career.name.toLowerCase().replace(/\s+/g, '-'),
+        title: career.name,
+        category: career.stream || "General",
+        description: career.description,
+        averageSalary: career.salary,
+        growthRate: "Growing",
+        requiredSkills: career.skills,
+        educationLevel: career.education,
+        workEnvironment: "Office, Remote, Hybrid",
+        demandLevel: "High" as const,
+        matchScore: career.matchScore || 85,
+        pros: ["High demand", "Good growth", "Rewarding work"],
+        cons: ["Requires dedication", "Continuous learning needed"],
+      }));
+      
+      setAssessmentResults(formattedCareers as CareerPath[]);
+      
+      // Store AI insight if available (you can display this on results page)
+      if (aiInsight) {
+        console.log("AI Insight:", aiInsight.insight);
+        // TODO: You can add state to show this insight on results page
+      }
+    } else {
+      // Fallback to local data if API fails
+      const scoredCareers = careerPaths.map((career) => {
+        let score = 70 + Math.floor(Math.random() * 25);
+        return { ...career, matchScore: score };
+      });
+      setAssessmentResults(scoredCareers.slice(0, 5));
+    }
     
-    setAssessmentResults(careersWithScores as CareerPath[]);
     setSlideDirection("right");
     setCurrentView("results");
   } catch (error) {
-    console.error("Failed to get recommendations from API:", error);
-    
-    // Fallback to old local method if API fails
-    const scoredCareers = careerPaths.map((career) => {
-      let score = 70;
-      score += Math.floor(Math.random() * 25);
-      
-      Object.values(answers).forEach((answer) => {
-        if (answer === "right") {
-          if (career.category === "Technology") score += 3;
-          if (career.category === "Design" || career.category === "Creative") score += 3;
-          if (career.category === "Healthcare" || career.category === "Education") score += 2;
-        }
-      });
-
-      return {
-        ...career,
-        matchScore: Math.min(Math.max(score, 65), 98),
-      };
-    });
-
-    const topCareers = scoredCareers
-      .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
-      .slice(0, 5);
-
-    setAssessmentResults(topCareers);
+    console.error("Failed to get recommendations:", error);
+    // Fallback
+    const scoredCareers = careerPaths.map((career) => ({
+      ...career,
+      matchScore: 70 + Math.floor(Math.random() * 25)
+    }));
+    setAssessmentResults(scoredCareers.slice(0, 5));
     setSlideDirection("right");
     setCurrentView("results");
   }
