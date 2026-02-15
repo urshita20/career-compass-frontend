@@ -10,6 +10,7 @@ import { InternshipHub } from "@/app/components/internship-hub";
 import { ResourceLibrary } from "@/app/components/resource-library";
 import { SkillGapTool } from "@/app/components/skill-gap-tool";
 import { careerPaths, CareerPath } from "@/app/components/career-data";
+import { getCareerSuggestions } from "@/app/components/api-service";
 
 type View = "home" | "assessment" | "results" | "explorer" | "learning" | "market" | "internships" | "resources" | "skillgap";
 
@@ -32,7 +33,32 @@ function App() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const handleAssessmentComplete = (answers: SwipeAnswers) => {
+  const handleAssessmentComplete = async (answers: SwipeAnswers) => {
+  // Determine interest based on swipe answers
+  // You can improve this logic later based on actual answer analysis
+  let interest = "technology";
+  let subject = "mathematics";
+  let classLevel = "11";
+  
+  try {
+    // Call your backend API
+    const recommendations = await getCareerSuggestions(interest, subject, classLevel);
+    
+    // Add match scores to the careers from backend
+    const careersWithScores = recommendations.map((career) => ({
+      ...career,
+      category: career.stream || "General", // Map stream to category
+      icon: "💼", // Default icon, you can customize later
+      matchScore: Math.floor(Math.random() * 30) + 70, // 70-100 range
+    }));
+    
+    setAssessmentResults(careersWithScores as CareerPath[]);
+    setSlideDirection("right");
+    setCurrentView("results");
+  } catch (error) {
+    console.error("Failed to get recommendations from API:", error);
+    
+    // Fallback to old local method if API fails
     const scoredCareers = careerPaths.map((career) => {
       let score = 70;
       score += Math.floor(Math.random() * 25);
@@ -50,6 +76,16 @@ function App() {
         matchScore: Math.min(Math.max(score, 65), 98),
       };
     });
+
+    const topCareers = scoredCareers
+      .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
+      .slice(0, 5);
+
+    setAssessmentResults(topCareers);
+    setSlideDirection("right");
+    setCurrentView("results");
+  }
+};
 
     const topCareers = scoredCareers
       .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
