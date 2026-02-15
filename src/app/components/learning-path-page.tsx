@@ -13,16 +13,111 @@ import {
   TrendingUp,
   Trophy,
   Users,
+  Zap,
+  Target,
 } from "lucide-react";
 import { CareerPath, learningResources } from "./career-data";
+import { useState } from "react";
 
 interface LearningPathPageProps {
   career: CareerPath;
   onBack: () => void;
 }
 
+// Career Try-Out Tasks
+const careerTasks: { [key: string]: Array<{ id: string; task: string; time: string; icon: string }> } = {
+  "software-engineer": [
+    { id: "1", task: "Watch a 'Day in the Life of a Software Engineer' video", time: "15 min", icon: "🎥" },
+    { id: "2", task: "Try coding a simple calculator using any language", time: "30 min", icon: "💻" },
+    { id: "3", task: "Solve a beginner coding challenge on LeetCode or HackerRank", time: "20 min", icon: "🧩" },
+    { id: "4", task: "Read about Git and create your first GitHub repository", time: "25 min", icon: "🔄" },
+  ],
+  "data-scientist": [
+    { id: "1", task: "Explore a dataset on Kaggle and analyze basic statistics", time: "30 min", icon: "📊" },
+    { id: "2", task: "Watch a video on 'What is Machine Learning?'", time: "15 min", icon: "🎥" },
+    { id: "3", task: "Create a simple visualization using Excel or Google Sheets", time: "20 min", icon: "📈" },
+    { id: "4", task: "Try a Python basics tutorial on Codecademy", time: "40 min", icon: "🐍" },
+  ],
+  "ux-designer": [
+    { id: "1", task: "Sketch 5 different app icon designs on paper", time: "20 min", icon: "✏️" },
+    { id: "2", task: "Redesign a button or form you use daily (draw it!)", time: "15 min", icon: "🎨" },
+    { id: "3", task: "Watch a UX design case study video", time: "20 min", icon: "🎥" },
+    { id: "4", task: "Create a free Figma account and explore the interface", time: "25 min", icon: "🖼️" },
+  ],
+  "product-manager": [
+    { id: "1", task: "Write a one-page feature proposal for an app you use", time: "30 min", icon: "📝" },
+    { id: "2", task: "Prioritize 5 features for a hypothetical product", time: "20 min", icon: "🎯" },
+    { id: "3", task: "Watch a 'Day in the Life of a PM' video", time: "15 min", icon: "🎥" },
+    { id: "4", task: "Read about Agile/Scrum methodology basics", time: "25 min", icon: "📚" },
+  ],
+  "digital-marketer": [
+    { id: "1", task: "Create 3 social media captions for a brand you like", time: "20 min", icon: "📱" },
+    { id: "2", task: "Analyze why a viral post went viral (write down reasons)", time: "15 min", icon: "🔍" },
+    { id: "3", task: "Design a simple poster or graphic using Canva", time: "30 min", icon: "🎨" },
+    { id: "4", task: "Watch a video on SEO basics", time: "20 min", icon: "🎥" },
+  ],
+  "financial-analyst": [
+    { id: "1", task: "Track your personal expenses for a week in a spreadsheet", time: "Daily", icon: "💰" },
+    { id: "2", task: "Read a financial news article and summarize key points", time: "20 min", icon: "📰" },
+    { id: "3", task: "Learn basic Excel formulas (SUM, AVERAGE, IF)", time: "30 min", icon: "📊" },
+    { id: "4", task: "Watch a video on 'How Stock Markets Work'", time: "15 min", icon: "🎥" },
+  ],
+  "healthcare-admin": [
+    { id: "1", task: "Research healthcare policies in your country", time: "25 min", icon: "📋" },
+    { id: "2", task: "Watch a video about hospital management systems", time: "20 min", icon: "🎥" },
+    { id: "3", task: "Create a mock patient appointment schedule", time: "20 min", icon: "📅" },
+    { id: "4", task: "Read about healthcare compliance regulations", time: "30 min", icon: "📚" },
+  ],
+  "content-creator": [
+    { id: "1", task: "Record a 30-second video about something you're passionate about", time: "20 min", icon: "🎬" },
+    { id: "2", task: "Write a blog post or article (300-500 words)", time: "40 min", icon: "✍️" },
+    { id: "3", task: "Edit a photo using free tools like Snapseed or VSCO", time: "15 min", icon: "📸" },
+    { id: "4", task: "Brainstorm 10 content ideas for a YouTube channel", time: "20 min", icon: "💡" },
+  ],
+  "cybersecurity": [
+    { id: "1", task: "Learn about common cybersecurity threats (phishing, malware)", time: "25 min", icon: "🛡️" },
+    { id: "2", task: "Try a beginner Capture The Flag (CTF) challenge online", time: "40 min", icon: "🚩" },
+    { id: "3", task: "Watch a documentary on famous cyber attacks", time: "30 min", icon: "🎥" },
+    { id: "4", task: "Set up two-factor authentication on your accounts", time: "15 min", icon: "🔐" },
+  ],
+  "environmental-scientist": [
+    { id: "1", task: "Track your carbon footprint for a day", time: "Daily", icon: "🌍" },
+    { id: "2", task: "Research a local environmental issue and write about it", time: "30 min", icon: "📝" },
+    { id: "3", task: "Watch a documentary on climate change", time: "45 min", icon: "🎥" },
+    { id: "4", task: "Start a small sustainability project (e.g., recycling plan)", time: "30 min", icon: "♻️" },
+  ],
+  "teacher": [
+    { id: "1", task: "Teach a 10-minute lesson on any topic to a friend/family", time: "20 min", icon: "👨‍🏫" },
+    { id: "2", task: "Create a fun quiz with 10 questions on your favorite subject", time: "25 min", icon: "📝" },
+    { id: "3", task: "Watch a TED talk on education and teaching methods", time: "20 min", icon: "🎥" },
+    { id: "4", task: "Design a creative classroom activity or game", time: "30 min", icon: "🎮" },
+  ],
+  "mechanical-engineer": [
+    { id: "1", task: "Disassemble and reassemble a simple device (pen, toy)", time: "20 min", icon: "🔧" },
+    { id: "2", task: "Watch a video on 'How Engines Work'", time: "15 min", icon: "🎥" },
+    { id: "3", task: "Sketch a simple mechanical design idea you have", time: "25 min", icon: "✏️" },
+    { id: "4", task: "Learn basic CAD software (Tinkercad is free!)", time: "40 min", icon: "💻" },
+  ],
+};
+
 export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
   const resources = learningResources[career.id] || [];
+  const tasks = careerTasks[career.id] || [];
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+
+  const toggleTask = (taskId: string) => {
+    setCompletedTasks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
+  };
+
+  const completionPercentage = tasks.length > 0 ? (completedTasks.size / tasks.length) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-zinc-950 dark:to-orange-950 transition-colors duration-300">
@@ -77,11 +172,104 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
           </div>
         </motion.div>
 
+        {/* TRY THIS CAREER OUT - NEW SECTION */}
+        {tasks.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8"
+          >
+            <Card className="border-2 shadow-xl bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 dark:border-orange-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-3xl flex items-center gap-2 dark:text-white">
+                      <Zap className="h-8 w-8 text-orange-500" />
+                      Try This Career Out! ⚡
+                    </CardTitle>
+                    <CardDescription className="text-lg mt-2 dark:text-gray-300">
+                      Get a real taste of what it's like to be a {career.title}. Complete these beginner-friendly tasks!
+                    </CardDescription>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+                      {completedTasks.size}/{tasks.length}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
+                  </div>
+                </div>
+                <Progress value={completionPercentage} className="h-3 mt-4 bg-orange-200 dark:bg-orange-900/50" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {tasks.map((task, index) => {
+                  const isCompleted = completedTasks.has(task.id);
+                  return (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.05 * index }}
+                      className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                        isCompleted
+                          ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700'
+                          : 'bg-white border-orange-200 hover:border-orange-400 dark:bg-zinc-900 dark:border-orange-800 dark:hover:border-orange-600'
+                      }`}
+                      onClick={() => toggleTask(task.id)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                            isCompleted
+                              ? 'bg-green-500 border-green-500'
+                              : 'border-orange-300 dark:border-orange-700'
+                          }`}>
+                            {isCompleted ? (
+                              <CheckCircle2 className="h-5 w-5 text-white" />
+                            ) : (
+                              <div className="w-3 h-3 rounded-full bg-orange-200 dark:bg-orange-800" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-2xl">{task.icon}</span>
+                            <h3 className={`text-lg font-semibold ${
+                              isCompleted
+                                ? 'line-through text-gray-500 dark:text-gray-500'
+                                : 'text-gray-800 dark:text-white'
+                            }`}>
+                              {task.task}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <Clock className="h-4 w-4" />
+                            <span>{task.time}</span>
+                          </div>
+                        </div>
+
+                        <Badge variant={isCompleted ? "default" : "outline"} className={
+                          isCompleted
+                            ? "bg-green-500 text-white"
+                            : "border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-400"
+                        }>
+                          {isCompleted ? "Done! ✓" : "Try it!"}
+                        </Badge>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Progress Tracker */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.2 }}
         >
           <Card className="mb-8 border-2 shadow-lg dark:bg-zinc-900 dark:border-zinc-800">
             <CardHeader>
@@ -227,7 +415,7 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
         >
           <Card className="border-2 shadow-lg bg-gradient-to-br from-orange-50 to-pink-50 dark:from-orange-900/20 dark:to-pink-900/20 dark:border-zinc-800">
             <CardHeader>
@@ -258,7 +446,7 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.5 }}
           className="mt-8 text-center"
         >
           <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 dark:border-purple-800">
