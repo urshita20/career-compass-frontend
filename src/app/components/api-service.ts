@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://career-compass-backend.vercel.app/api/careers";
+const API_BASE_URL = "https://career-compass-backend-nzny.onrender.com/api/careers";
 
 export interface BackendCareer {
   id: number;
@@ -11,34 +11,35 @@ export interface BackendCareer {
   matchScore?: number;
 }
 
-// Get personalized career suggestions
-export async function getCareerSuggestions(
-  interest: string,
-  subject: string,
-  classLevel: string
-): Promise<BackendCareer[]> {
+export interface AIInsight {
+  insight: string;
+  generatedAt: string;
+  fallback?: boolean;
+}
+
+// Submit assessment and get AI-powered recommendations
+export async function submitAssessment(answers: any): Promise<{ careers: BackendCareer[], aiInsight: AIInsight | null }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/suggestions`, {
+    const response = await fetch(`${API_BASE_URL}/assessment/submit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        interest,
-        subject,
-        classLevel,
-      }),
+      body: JSON.stringify({ answers }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch career suggestions");
+      throw new Error("Failed to submit assessment");
     }
 
     const data = await response.json();
-    return data.recommendedCareers || [];
+    return {
+      careers: data.recommendedCareers || [],
+      aiInsight: data.aiInsights || null
+    };
   } catch (error) {
-    console.error("Error fetching career suggestions:", error);
-    return [];
+    console.error("Error submitting assessment:", error);
+    return { careers: [], aiInsight: null };
   }
 }
 
