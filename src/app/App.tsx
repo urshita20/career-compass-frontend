@@ -87,15 +87,6 @@ function App() {
   }
 };
 
-    const topCareers = scoredCareers
-      .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
-      .slice(0, 5);
-
-    setAssessmentResults(topCareers);
-    setSlideDirection("right");
-    setCurrentView("results");
-  };
-
   const handleStartAssessment = () => {
     setSlideDirection("right");
     setCurrentView("assessment");
