@@ -11,13 +11,13 @@ import { ResourceLibrary } from "@/app/components/resource-library";
 import { SkillGapTool } from "@/app/components/skill-gap-tool";
 import { careerPaths, CareerPath } from "@/app/components/career-data";
 import { submitAssessment } from "@/app/components/api-service";
-import { getCareerSuggestions } from "@/app/components/api-service";
 
 type View = "home" | "assessment" | "results" | "explorer" | "learning" | "market" | "internships" | "resources" | "skillgap";
 
 function App() {
   const [currentView, setCurrentView] = useState<View>("home");
   const [assessmentResults, setAssessmentResults] = useState<CareerPath[]>([]);
+  const [aiInsight, setAiInsight] = useState<string | null>(null); // NEW: Store AI insight
   const [selectedLearningCareer, setSelectedLearningCareer] = useState<CareerPath | null>(null);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">("right");
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -34,60 +34,70 @@ function App() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
- const handleAssessmentComplete = async (answers: SwipeAnswers) => {
-  try {
-    // Call backend API with assessment answers
-    const { careers, aiInsight } = await submitAssessment(answers);
-    
-    if (careers.length > 0) {
-      // Map backend careers to frontend format
-      const formattedCareers = careers.map((career) => ({
-        id: career.name.toLowerCase().replace(/\s+/g, '-'),
-        title: career.name,
-        category: career.stream || "General",
-        description: career.description,
-        averageSalary: career.salary,
-        growthRate: "Growing",
-        requiredSkills: career.skills,
-        educationLevel: career.education,
-        workEnvironment: "Office, Remote, Hybrid",
-        demandLevel: "High" as const,
-        matchScore: career.matchScore || 85,
-        pros: ["High demand", "Good growth", "Rewarding work"],
-        cons: ["Requires dedication", "Continuous learning needed"],
-      }));
-      console.log("Formatted Career IDs:", formattedCareers.map(c => c.id));
+  const handleAssessmentComplete = async (answers: SwipeAnswers) => {
+    try {
+      console.log("🚀 Submitting assessment...");
       
-      setAssessmentResults(formattedCareers as CareerPath[]);
+      // Call backend API with assessment answers
+      const { careers, aiInsight: insight } = await submitAssessment(answers);
       
-      // Store AI insight if available (you can display this on results page)
-      if (aiInsight) {
-        console.log("AI Insight:", aiInsight.insight);
-        // TODO: You can add state to show this insight on results page
+      console.log("✅ Received careers:", careers.length);
+      console.log("✅ Received AI insight:", insight);
+      
+      if (careers.length > 0) {
+        // Map backend careers to frontend format
+        const formattedCareers = careers.map((career) => ({
+          id: career.name.toLowerCase().replace(/\s+/g, '-'),
+          title: career.name,
+          category: career.stream || "General",
+          description: career.description,
+          averageSalary: career.salary,
+          growthRate: "Growing",
+          requiredSkills: career.skills,
+          educationLevel: career.education,
+          workEnvironment: "Office, Remote, Hybrid",
+          demandLevel: "High" as const,
+          matchScore: career.matchScore || 85,
+          pros: ["High demand", "Good growth", "Rewarding work"],
+          cons: ["Requires dedication", "Continuous learning needed"],
+        }));
+        
+        setAssessmentResults(formattedCareers as CareerPath[]);
+        
+        // Store AI insight
+        if (insight && insight.insight) {
+          console.log("💡 Setting AI insight:", insight.insight);
+          setAiInsight(insight.insight);
+        } else {
+          console.log("⚠️ No AI insight received");
+          setAiInsight(null);
+        }
+      } else {
+        console.log("⚠️ No careers returned, using fallback");
+        // Fallback to local data if API fails
+        const scoredCareers = careerPaths.map((career) => {
+          let score = 70 + Math.floor(Math.random() * 25);
+          return { ...career, matchScore: score };
+        });
+        setAssessmentResults(scoredCareers.slice(0, 5));
+        setAiInsight("Our AI is taking a quick break, but based on your responses, you're showing great potential across multiple career paths! Keep exploring and trying new things.");
       }
-    } else {
-      // Fallback to local data if API fails
-      const scoredCareers = careerPaths.map((career) => {
-        let score = 70 + Math.floor(Math.random() * 25);
-        return { ...career, matchScore: score };
-      });
+      
+      setSlideDirection("right");
+      setCurrentView("results");
+    } catch (error) {
+      console.error("❌ Failed to get recommendations:", error);
+      // Fallback
+      const scoredCareers = careerPaths.map((career) => ({
+        ...career,
+        matchScore: 70 + Math.floor(Math.random() * 25)
+      }));
       setAssessmentResults(scoredCareers.slice(0, 5));
+      setAiInsight("We're having trouble connecting to our AI right now, but your results are ready! You're showing interest across diverse fields - keep exploring!");
+      setSlideDirection("right");
+      setCurrentView("results");
     }
-    
-    setSlideDirection("right");
-    setCurrentView("results");
-  } catch (error) {
-    console.error("Failed to get recommendations:", error);
-    // Fallback
-    const scoredCareers = careerPaths.map((career) => ({
-      ...career,
-      matchScore: 70 + Math.floor(Math.random() * 25)
-    }));
-    setAssessmentResults(scoredCareers.slice(0, 5));
-    setSlideDirection("right");
-    setCurrentView("results");
-  }
-};
+  };
 
   const handleStartAssessment = () => {
     setSlideDirection("right");
@@ -97,6 +107,7 @@ function App() {
   const handleBackToHome = () => {
     setSlideDirection("left");
     setCurrentView("home");
+    setAiInsight(null); // Clear insight when going home
   };
 
   const handleExploreCareers = () => {
@@ -208,6 +219,7 @@ function App() {
           >
             <ResultsDashboard
               recommendedCareers={assessmentResults}
+              aiInsight={aiInsight}
               onBack={handleBackToHome}
               onExploreMore={handleExploreCareers}
               onStartLearning={handleStartLearning}
