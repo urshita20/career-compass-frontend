@@ -153,9 +153,9 @@ const careerTasks: { [key: string]: Task[] } = {
 export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   
-  const tasks = careerTasks[career.id] || [];
-  const completionPercentage = tasks.length > 0 
-    ? Math.round((completedTasks.size / tasks.length) * 100) 
+  const careerTasksList = careerTasks[career.id] || [];
+  const completionPercentage = careerTasksList.length > 0 
+  ? Math.round((completedTasks.size / careerTasksList.length) * 100)
     : 0;
 
   const toggleTask = (taskId: string) => {
@@ -232,7 +232,7 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
         </div>
 
         {/* Try This Career Out Section */}
-        {tasks.length > 0 && (
+        {careerTasksList.length > 0 && (
           <Card className="mb-8 border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -254,7 +254,7 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {tasks.map((task) => {
+              {careerTasksList.map((task) => {
                 const isCompleted = completedTasks.has(task.id);
                 return (
                   <Card
