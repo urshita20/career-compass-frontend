@@ -56,6 +56,7 @@ function App() {
         pros: ["High demand", "Good growth", "Rewarding work"],
         cons: ["Requires dedication", "Continuous learning needed"],
       }));
+      console.log("Formatted Career IDs:", formattedCareers.map(c => c.id));
       
       setAssessmentResults(formattedCareers as CareerPath[]);
       
