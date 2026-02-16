@@ -1,152 +1,182 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
-import { CheckCircle2, Circle, Sparkles, BookOpen, Target, TrendingUp } from "lucide-react";
-import { CareerPath } from "./career-data";
-import { useState } from "react";
+import { Progress } from "@/app/components/ui/progress";
+import { motion } from "motion/react";
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Play,
+  Star,
+  TrendingUp,
+  Trophy,
+  Users,
+  Zap,
+} from "lucide-react";
+import { CareerPath, learningResources } from "./career-data";
+import { useState, useEffect } from "react";
 
 interface LearningPathPageProps {
   career: CareerPath;
   onBack: () => void;
 }
 
-interface CareerTask {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-}
+// TASKS - Now using MULTIPLE ID formats to catch all careers!
+const getAllCareerTasks = () => {
+  const baseTasks = {
+    "software-engineer": [
+      { id: "1", task: "Watch a 'Day in the Life of a Software Engineer' video", time: "15 min", icon: "🎥" },
+      { id: "2", task: "Try coding a simple calculator using any language", time: "30 min", icon: "💻" },
+      { id: "3", task: "Solve a beginner coding challenge on LeetCode", time: "20 min", icon: "🧩" },
+      { id: "4", task: "Create your first GitHub repository", time: "25 min", icon: "🔄" },
+    ],
+    "data-scientist": [
+      { id: "1", task: "Explore a dataset on Kaggle and analyze statistics", time: "30 min", icon: "📊" },
+      { id: "2", task: "Watch a video on 'What is Machine Learning?'", time: "15 min", icon: "🎥" },
+      { id: "3", task: "Create a simple chart using Excel or Google Sheets", time: "20 min", icon: "📈" },
+      { id: "4", task: "Try a Python basics tutorial", time: "40 min", icon: "🐍" },
+    ],
+    "ux-designer": [
+      { id: "1", task: "Sketch 5 different app icon designs on paper", time: "20 min", icon: "✏️" },
+      { id: "2", task: "Redesign a button or form you use daily", time: "15 min", icon: "🎨" },
+      { id: "3", task: "Watch a UX design case study video", time: "20 min", icon: "🎥" },
+      { id: "4", task: "Create a free Figma account and explore", time: "25 min", icon: "🖼️" },
+    ],
+    "product-manager": [
+      { id: "1", task: "Write a one-page feature proposal for an app", time: "30 min", icon: "📝" },
+      { id: "2", task: "Prioritize 5 features for a hypothetical product", time: "20 min", icon: "🎯" },
+      { id: "3", task: "Watch a 'Day in the Life of a PM' video", time: "15 min", icon: "🎥" },
+      { id: "4", task: "Read about Agile/Scrum basics", time: "25 min", icon: "📚" },
+    ],
+    "digital-marketer": [
+      { id: "1", task: "Create 3 social media captions for a brand", time: "20 min", icon: "📱" },
+      { id: "2", task: "Analyze why a viral post went viral", time: "15 min", icon: "🔍" },
+      { id: "3", task: "Design a simple poster using Canva", time: "30 min", icon: "🎨" },
+      { id: "4", task: "Watch a video on SEO basics", time: "20 min", icon: "🎥" },
+    ],
+    "entrepreneur": [
+      { id: "1", task: "Write down 10 business ideas", time: "20 min", icon: "💡" },
+      { id: "2", task: "Research a successful startup story", time: "25 min", icon: "📚" },
+      { id: "3", task: "Create a simple business plan outline", time: "30 min", icon: "📝" },
+      { id: "4", task: "Watch a video about startup failures and lessons", time: "20 min", icon: "🎥" },
+    ],
+    "content-creator": [
+      { id: "1", task: "Record a 30-second video about your passion", time: "20 min", icon: "🎬" },
+      { id: "2", task: "Write a blog post (300-500 words)", time: "40 min", icon: "✍️" },
+      { id: "3", task: "Edit a photo using free tools", time: "15 min", icon: "📸" },
+      { id: "4", task: "Brainstorm 10 content ideas", time: "20 min", icon: "💡" },
+    ],
+    "cybersecurity": [
+      { id: "1", task: "Learn about common cybersecurity threats", time: "25 min", icon: "🛡️" },
+      { id: "2", task: "Try a beginner CTF challenge", time: "40 min", icon: "🚩" },
+      { id: "3", task: "Watch a documentary on cyber attacks", time: "30 min", icon: "🎥" },
+      { id: "4", task: "Set up two-factor authentication", time: "15 min", icon: "🔐" },
+    ],
+    "teacher": [
+      { id: "1", task: "Teach a 10-minute lesson to a friend", time: "20 min", icon: "👨‍🏫" },
+      { id: "2", task: "Create a fun quiz with 10 questions", time: "25 min", icon: "📝" },
+      { id: "3", task: "Watch a TED talk on teaching methods", time: "20 min", icon: "🎥" },
+      { id: "4", task: "Design a classroom activity or game", time: "30 min", icon: "🎮" },
+    ],
+    "doctor": [
+      { id: "1", task: "Read about a medical specialty", time: "25 min", icon: "📚" },
+      { id: "2", task: "Watch a surgery documentary", time: "40 min", icon: "🎥" },
+      { id: "3", task: "Learn basic first aid techniques", time: "30 min", icon: "🏥" },
+      { id: "4", task: "Research medical school requirements", time: "20 min", icon: "📝" },
+    ]
+  };
 
-const careerTasks: { [key: string]: CareerTask[] } = {
-  "software-engineer": [
-    { id: "1", title: "Build a Simple Calculator", description: "Create a calculator app using HTML, CSS, and JavaScript", difficulty: "Easy" },
-    { id: "2", title: "Create Your Portfolio Website", description: "Design and code your personal portfolio from scratch", difficulty: "Medium" },
-    { id: "3", title: "Solve 10 Coding Problems", description: "Practice problem-solving on platforms like LeetCode or HackerRank", difficulty: "Medium" },
-    { id: "4", title: "Build a To-Do List App", description: "Create a functional to-do app with add, delete, and mark as complete features", difficulty: "Hard" },
-  ],
-  "data-scientist": [
-    { id: "1", title: "Analyze a Public Dataset", description: "Download a dataset from Kaggle and perform basic analysis using Python/Excel", difficulty: "Easy" },
-    { id: "2", title: "Create Data Visualizations", description: "Make 5 different charts to tell a story with data", difficulty: "Medium" },
-    { id: "3", title: "Build a Simple ML Model", description: "Train a basic prediction model using scikit-learn", difficulty: "Hard" },
-    { id: "4", title: "Write a Data Story", description: "Present your findings in a blog post or presentation", difficulty: "Medium" },
-  ],
-  "data-analyst": [
-    { id: "1", title: "Clean a Messy Dataset", description: "Take a real dataset and clean it - handle missing values, duplicates, etc.", difficulty: "Easy" },
-    { id: "2", title: "Create an Excel Dashboard", description: "Build an interactive dashboard with charts and pivot tables", difficulty: "Medium" },
-    { id: "3", title: "Perform SQL Queries", description: "Practice 20 SQL queries on a sample database", difficulty: "Medium" },
-    { id: "4", title: "Present Business Insights", description: "Analyze sales data and present actionable insights", difficulty: "Hard" },
-  ],
-  "cybersecurity-specialist": [
-    { id: "1", title: "Learn Basic Networking", description: "Understand how IP addresses, DNS, and HTTP work", difficulty: "Easy" },
-    { id: "2", title: "Set Up a Virtual Lab", description: "Install VirtualBox and create a practice hacking environment", difficulty: "Medium" },
-    { id: "3", title: "Complete TryHackMe Room", description: "Finish a beginner-level cybersecurity challenge", difficulty: "Medium" },
-    { id: "4", title: "Perform a Security Audit", description: "Check your home network for vulnerabilities", difficulty: "Hard" },
-  ],
-  "ux/ui-designer": [
-    { id: "1", title: "Redesign a Mobile App", description: "Take an existing app and create an improved design mockup", difficulty: "Easy" },
-    { id: "2", title: "Create a Design System", description: "Build a basic design system with colors, fonts, and components", difficulty: "Medium" },
-    { id: "3", title: "Conduct User Research", description: "Interview 5 people about their app usage habits", difficulty: "Medium" },
-    { id: "4", title: "Build an Interactive Prototype", description: "Create a clickable prototype in Figma with animations", difficulty: "Hard" },
-  ],
-  "graphic-designer": [
-    { id: "1", title: "Design 5 Logos", description: "Create logo concepts for different types of businesses", difficulty: "Easy" },
-    { id: "2", title: "Make Social Media Graphics", description: "Design a set of Instagram posts for a brand", difficulty: "Medium" },
-    { id: "3", title: "Create a Brand Identity", description: "Develop a complete brand kit (logo, colors, fonts, patterns)", difficulty: "Hard" },
-    { id: "4", title: "Design a Poster", description: "Create an eye-catching poster for an event or movie", difficulty: "Medium" },
-  ],
-  "content-creator": [
-    { id: "1", title: "Post Daily for a Week", description: "Create and share content on any platform for 7 consecutive days", difficulty: "Easy" },
-    { id: "2", title: "Edit a Short Video", description: "Create a 60-second video with music, transitions, and effects", difficulty: "Medium" },
-    { id: "3", title: "Write 5 Blog Posts", description: "Write informative articles on topics you're passionate about", difficulty: "Medium" },
-    { id: "4", title: "Grow to 100 Followers", description: "Build an engaged audience on a social platform", difficulty: "Hard" },
-  ],
-  "entrepreneur": [
-    { id: "1", title: "Identify a Problem", description: "Find 3 problems people face daily that could be solved with a business", difficulty: "Easy" },
-    { id: "2", title: "Create a Business Plan", description: "Write a one-page business plan for a startup idea", difficulty: "Medium" },
-    { id: "3", title: "Make Your First Sale", description: "Sell a product or service to at least one customer", difficulty: "Hard" },
-    { id: "4", title: "Build a Landing Page", description: "Create a simple website to showcase your business idea", difficulty: "Medium" },
-  ],
-  "marketing-manager": [
-    { id: "1", title: "Run a Social Media Campaign", description: "Plan and execute a week-long campaign for a brand or cause", difficulty: "Easy" },
-    { id: "2", title: "Analyze Competitor Strategy", description: "Study 3 brands and document their marketing approaches", difficulty: "Medium" },
-    { id: "3", title: "Create Marketing Materials", description: "Design posters, flyers, and digital ads for a product", difficulty: "Medium" },
-    { id: "4", title: "Track Campaign Metrics", description: "Use analytics to measure reach, engagement, and conversions", difficulty: "Hard" },
-  ],
-  "investment-banker": [
-    { id: "1", title: "Learn Stock Market Basics", description: "Understand stocks, bonds, IPOs, and market indices", difficulty: "Easy" },
-    { id: "2", title: "Analyze a Company", description: "Read financial statements and evaluate a company's health", difficulty: "Medium" },
-    { id: "3", title: "Create a Mock Portfolio", description: "Build a virtual investment portfolio and track its performance", difficulty: "Medium" },
-    { id: "4", title: "Present an Investment Pitch", description: "Prepare a 5-minute pitch recommending a stock to invest in", difficulty: "Hard" },
-  ],
-  "chartered-accountant": [
-    { id: "1", title: "Learn Accounting Basics", description: "Understand debits, credits, and double-entry bookkeeping", difficulty: "Easy" },
-    { id: "2", title: "Prepare a Personal Budget", description: "Track your income and expenses for a month", difficulty: "Easy" },
-    { id: "3", title: "File Mock Tax Returns", description: "Practice filling out tax forms with sample data", difficulty: "Medium" },
-    { id: "4", title: "Audit Financial Statements", description: "Review a company's balance sheet for errors or inconsistencies", difficulty: "Hard" },
-  ],
-  "doctor": [
-    { id: "1", title: "Shadow a Healthcare Professional", description: "Spend a day observing a doctor or nurse at work", difficulty: "Easy" },
-    { id: "2", title: "Learn First Aid", description: "Complete an online first aid and CPR certification course", difficulty: "Medium" },
-    { id: "3", title: "Read Medical Cases", description: "Study 5 real medical case studies and their diagnoses", difficulty: "Medium" },
-    { id: "4", title: "Volunteer at a Clinic", description: "Help out at a local health camp or clinic for a day", difficulty: "Hard" },
-  ],
-  "nurse": [
-    { id: "1", title: "Take a CPR Course", description: "Get certified in basic life support and CPR", difficulty: "Easy" },
-    { id: "2", title: "Learn Medical Terminology", description: "Memorize 50 common medical terms and abbreviations", difficulty: "Medium" },
-    { id: "3", title: "Practice Patient Care", description: "Volunteer to help elderly or sick family members/neighbors", difficulty: "Medium" },
-    { id: "4", title: "Understand Medications", description: "Research 10 common medications and their uses", difficulty: "Hard" },
-  ],
-  "pharmacist": [
-    { id: "1", title: "Learn Drug Categories", description: "Study the main categories of medicines (antibiotics, painkillers, etc.)", difficulty: "Easy" },
-    { id: "2", title: "Visit a Pharmacy", description: "Shadow a pharmacist and observe how they work", difficulty: "Medium" },
-    { id: "3", title: "Understand Prescriptions", description: "Learn how to read and interpret medical prescriptions", difficulty: "Medium" },
-    { id: "4", title: "Research Drug Interactions", description: "Study which medications shouldn't be taken together and why", difficulty: "Hard" },
-  ],
-  "teacher": [
-    { id: "1", title: "Create a Lesson Plan", description: "Plan a 30-minute lesson on any topic of your choice", difficulty: "Easy" },
-    { id: "2", title: "Tutor Someone", description: "Help a younger student or friend learn something new", difficulty: "Medium" },
-    { id: "3", title: "Make Educational Content", description: "Create teaching materials like slides, worksheets, or videos", difficulty: "Medium" },
-    { id: "4", title: "Teach a Mini Class", description: "Conduct a small class or workshop for 5+ people", difficulty: "Hard" },
-  ],
-  "lawyer": [
-    { id: "1", title: "Study a Legal Case", description: "Read about a famous court case and understand the verdict", difficulty: "Easy" },
-    { id: "2", title: "Learn Legal Terms", description: "Memorize 20 common legal terms and their meanings", difficulty: "Medium" },
-    { id: "3", title: "Practice Argumentation", description: "Debate both sides of a controversial legal issue", difficulty: "Medium" },
-    { id: "4", title: "Draft a Legal Document", description: "Write a simple contract or legal agreement", difficulty: "Hard" },
-  ],
-  "civil-engineer": [
-    { id: "1", title: "Design a Simple Structure", description: "Sketch plans for a small bridge or building", difficulty: "Easy" },
-    { id: "2", title: "Learn CAD Software", description: "Complete beginner tutorials for AutoCAD or SketchUp", difficulty: "Medium" },
-    { id: "3", title: "Calculate Structural Loads", description: "Practice basic calculations for weight and stress distribution", difficulty: "Hard" },
-    { id: "4", title: "Visit a Construction Site", description: "Observe real construction work and ask questions", difficulty: "Medium" },
-  ],
-  "mechanical-engineer": [
-    { id: "1", title: "Build a Simple Machine", description: "Create a basic mechanism using household items", difficulty: "Easy" },
-    { id: "2", title: "Learn 3D Modeling", description: "Design a mechanical part in software like Fusion 360", difficulty: "Medium" },
-    { id: "3", title: "Disassemble & Reassemble", description: "Take apart an old device and put it back together", difficulty: "Medium" },
-    { id: "4", title: "Solve Thermodynamics Problems", description: "Work through practice problems on heat and energy", difficulty: "Hard" },
-  ],
-  "architect": [
-    { id: "1", title: "Sketch Building Designs", description: "Draw floor plans for your dream house", difficulty: "Easy" },
-    { id: "2", title: "Study Famous Buildings", description: "Research 5 iconic buildings and their architectural styles", difficulty: "Medium" },
-    { id: "3", title: "Create a 3D Model", description: "Design a building in SketchUp or Blender", difficulty: "Hard" },
-    { id: "4", title: "Visit Architectural Sites", description: "Explore and photograph interesting buildings in your city", difficulty: "Medium" },
-  ],
-  "psychologist": [
-    { id: "1", title: "Learn Psychology Basics", description: "Study major psychological theories and concepts", difficulty: "Easy" },
-    { id: "2", title: "Practice Active Listening", description: "Have deep conversations where you focus on truly understanding others", difficulty: "Medium" },
-    { id: "3", title: "Study Case Studies", description: "Read and analyze 5 famous psychological case studies", difficulty: "Medium" },
-    { id: "4", title: "Conduct a Mini Research", description: "Design and conduct a simple survey on human behavior", difficulty: "Hard" },
-  ],
+  // Create ALL possible ID variations for EVERY career
+  const expandedTasks: { [key: string]: any[] } = {};
+  
+  Object.keys(baseTasks).forEach(baseKey => {
+    const tasks = baseTasks[baseKey as keyof typeof baseTasks];
+    
+    // Add original key
+    expandedTasks[baseKey] = tasks;
+    
+    // Add title-case variations
+    const titleCase = baseKey.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+    expandedTasks[titleCase] = tasks;
+    
+    // Add variations without hyphens
+    expandedTasks[baseKey.replace(/-/g, '')] = tasks;
+    expandedTasks[titleCase.replace(/\s/g, '')] = tasks;
+    
+    // Add lowercase no-space
+    expandedTasks[baseKey.replace(/-/g, '').toLowerCase()] = tasks;
+  });
+  
+  // Add specific backend career names
+  expandedTasks["Software Engineer"] = baseTasks["software-engineer"];
+  expandedTasks["Data Analyst"] = baseTasks["data-scientist"];
+  expandedTasks["Data Scientist"] = baseTasks["data-scientist"];
+  expandedTasks["AI Engineer"] = baseTasks["software-engineer"];
+  expandedTasks["UI/UX Designer"] = baseTasks["ux-designer"];
+  expandedTasks["UX/UI Designer"] = baseTasks["ux-designer"];
+  expandedTasks["Graphic Designer"] = baseTasks["ux-designer"];
+  expandedTasks["Product Manager"] = baseTasks["product-manager"];
+  expandedTasks["Digital Marketing Specialist"] = baseTasks["digital-marketer"];
+  expandedTasks["Marketing Manager"] = baseTasks["digital-marketer"];
+  expandedTasks["Entrepreneur"] = baseTasks["entrepreneur"];
+  expandedTasks["Business Analyst"] = baseTasks["entrepreneur"];
+  expandedTasks["Financial Analyst"] = baseTasks["entrepreneur"];
+  expandedTasks["Content Writer"] = baseTasks["content-creator"];
+  expandedTasks["Journalist"] = baseTasks["content-creator"];
+  expandedTasks["Cybersecurity Specialist"] = baseTasks["cybersecurity"];
+  expandedTasks["Cybersecurity Analyst"] = baseTasks["cybersecurity"];
+  expandedTasks["Education Specialist/Teacher"] = baseTasks["teacher"];
+  expandedTasks["Teacher"] = baseTasks["teacher"];
+  expandedTasks["Doctor"] = baseTasks["doctor"];
+  expandedTasks["Healthcare Administrator"] = baseTasks["doctor"];
+  
+  return expandedTasks;
 };
 
 export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
-  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const resources = learningResources[career.id] || [];
+  const allCareerTasks = getAllCareerTasks();
   
-  const availableTasks = careerTasks[career.id] || [];
-  const completionPercentage = availableTasks.length > 0 
-    ? Math.round((completedTasks.size / availableTasks.length) * 100) 
-    : 0;
+  // Try MULTIPLE ways to find tasks
+  const findTasks = () => {
+    // Try direct ID match
+    if (allCareerTasks[career.id]) return allCareerTasks[career.id];
+    
+    // Try title match
+    if (allCareerTasks[career.title]) return allCareerTasks[career.title];
+    
+    // Try normalized versions
+    const normalized = career.title.toLowerCase().replace(/\s+/g, '-');
+    if (allCareerTasks[normalized]) return allCareerTasks[normalized];
+    
+    // Try without special characters
+    const simplified = career.title.replace(/[\/\s-]/g, '').toLowerCase();
+    if (allCareerTasks[simplified]) return allCareerTasks[simplified];
+    
+    // Default generic tasks for ANY career
+    return [
+      { id: "1", task: `Research what a ${career.title} does daily`, time: "20 min", icon: "🔍" },
+      { id: "2", task: `Watch a 'Day in the Life' video about this career`, time: "15 min", icon: "🎥" },
+      { id: "3", task: `Read an article or blog post by a ${career.title}`, time: "25 min", icon: "📚" },
+      { id: "4", task: `Connect with someone in this field on LinkedIn`, time: "15 min", icon: "💼" },
+      { id: "5", task: `Create a list of skills you need to develop`, time: "20 min", icon: "📝" },
+    ];
+  };
+  
+  const tasks = findTasks();
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+
+  // Debug logging (remove after testing)
+  useEffect(() => {
+    console.log("🎯 Career ID:", career.id);
+    console.log("🎯 Career Title:", career.title);
+    console.log("🎯 Tasks found:", tasks.length);
+    console.log("🎯 Available task keys:", Object.keys(allCareerTasks).slice(0, 10));
+  }, [career]);
 
   const toggleTask = (taskId: string) => {
     setCompletedTasks(prev => {
@@ -160,156 +190,361 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
     });
   };
 
+  const completionPercentage = tasks.length > 0 ? (completedTasks.size / tasks.length) * 100 : 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-6">
-      <div className="max-w-5xl mx-auto">
-        <Button
-          onClick={onBack}
-          variant="ghost"
-          className="mb-6 hover:bg-white/50"
-        >
-          ← Back to Results
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-zinc-950 dark:to-orange-950 transition-colors duration-300">
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <Button onClick={onBack} variant="ghost" className="mb-6 dark:text-white dark:hover:bg-zinc-800">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Results
         </Button>
 
-        <Card className="mb-8 overflow-hidden border-2 border-purple-200 bg-gradient-to-br from-purple-500 to-pink-500">
-          <CardContent className="p-8 text-white">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-8 w-8" />
-              <h1 className="text-4xl font-bold">Your Learning Path 🚀</h1>
+        {/* Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-3xl p-8 md:p-12 shadow-xl">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h1 className="text-4xl md:text-5xl mb-3 font-extrabold">
+                  Your Learning Path 🚀
+                </h1>
+                <p className="text-xl text-purple-100">{career.title}</p>
+              </div>
+              <Badge className="bg-white text-purple-600 px-4 py-2 text-base">
+                Personalized
+              </Badge>
             </div>
-            <h2 className="text-2xl font-semibold mb-3">{career.title}</h2>
-            <p className="text-lg opacity-90 max-w-3xl">
-              We've curated the perfect learning journey just for you! Follow these steps to become a pro {career.title.toLowerCase()}.
+            <p className="text-lg text-purple-100 mb-6 max-w-3xl">
+              We've curated the perfect learning journey just for you! Follow these steps to
+              become a pro {career.title.toLowerCase()}.
             </p>
-          </CardContent>
-        </Card>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="border-2 border-blue-200 bg-white/70 backdrop-blur">
-            <CardContent className="p-6 text-center">
-              <BookOpen className="h-10 w-10 mx-auto mb-3 text-blue-500" />
-              <h3 className="font-semibold text-lg mb-1">0 Courses</h3>
-              <p className="text-sm text-gray-600">Curated for you</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-purple-200 bg-white/70 backdrop-blur">
-            <CardContent className="p-6 text-center">
-              <Target className="h-10 w-10 mx-auto mb-3 text-purple-500" />
-              <h3 className="font-semibold text-lg mb-1">6-12 Months</h3>
-              <p className="text-sm text-gray-600">Learning timeline</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-pink-200 bg-white/70 backdrop-blur">
-            <CardContent className="p-6 text-center">
-              <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-pink-500" />
-              <h3 className="font-semibold text-lg mb-1">Career Ready</h3>
-              <p className="text-sm text-gray-600">Upon completion</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-orange-200 bg-white/70 backdrop-blur">
-            <CardContent className="p-6 text-center">
-              <TrendingUp className="h-10 w-10 mx-auto mb-3 text-orange-500" />
-              <h3 className="font-semibold text-lg mb-1">{career.averageSalary}</h3>
-              <p className="text-sm text-gray-600">Starting salary</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {availableTasks.length > 0 && (
-          <Card className="mb-8 border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-orange-500 text-white rounded-full p-2">
-                    <Sparkles className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl">Try This Career Out ⚡</CardTitle>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Get hands-on experience before committing! Complete these tasks to see if this career is right for you.
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-orange-600">{completionPercentage}%</div>
-                  <div className="text-xs text-gray-600">Complete</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-3xl mb-1">📚</div>
+                <div className="text-sm text-purple-100">
+                  {resources.length} Courses
                 </div>
               </div>
+              <div className="text-center">
+                <div className="text-3xl mb-1">⏱️</div>
+                <div className="text-sm text-purple-100">6-12 Months</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl mb-1">🎯</div>
+                <div className="text-sm text-purple-100">Career Ready</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl mb-1">💰</div>
+                <div className="text-sm text-purple-100">{career.averageSalary}</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* TRY THIS CAREER OUT - ALWAYS SHOWS NOW! */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <Card className="border-2 shadow-xl bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 dark:border-orange-800">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-3xl flex items-center gap-2 dark:text-white">
+                    <Zap className="h-8 w-8 text-orange-500" />
+                    Try This Career Out! ⚡
+                  </CardTitle>
+                  <CardDescription className="text-lg mt-2 dark:text-gray-300">
+                    Get a real taste of what it's like to be a {career.title}. Complete these beginner-friendly tasks!
+                  </CardDescription>
+                </div>
+                <div className="text-right">
+                  <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+                    {completedTasks.size}/{tasks.length}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
+                </div>
+              </div>
+              <Progress value={completionPercentage} className="h-3 mt-4 bg-orange-200 dark:bg-orange-900/50" />
             </CardHeader>
             <CardContent className="space-y-3">
-              {availableTasks.map((task) => {
+              {tasks.map((task, index) => {
                 const isCompleted = completedTasks.has(task.id);
                 return (
-                  <Card
+                  <motion.div
                     key={task.id}
-                    className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 * index }}
+                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
                       isCompleted
-                        ? "bg-green-50 border-green-300"
-                        : "bg-white border-gray-200 hover:border-orange-300"
+                        ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700'
+                        : 'bg-white border-orange-200 hover:border-orange-400 dark:bg-zinc-900 dark:border-orange-800 dark:hover:border-orange-600'
                     }`}
                     onClick={() => toggleTask(task.id)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="mt-1">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0">
+                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                          isCompleted
+                            ? 'bg-green-500 border-green-500'
+                            : 'border-orange-300 dark:border-orange-700'
+                        }`}>
                           {isCompleted ? (
-                            <CheckCircle2 className="h-6 w-6 text-green-600" />
+                            <CheckCircle2 className="h-5 w-5 text-white" />
                           ) : (
-                            <Circle className="h-6 w-6 text-gray-400" />
+                            <div className="w-3 h-3 rounded-full bg-orange-200 dark:bg-orange-800" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className={`font-semibold ${isCompleted ? "text-green-800" : "text-gray-900"}`}>
-                              {task.title}
-                            </h4>
-                            <Badge
-                              variant="outline"
-                              className={`
-                                ${task.difficulty === "Easy" && "border-green-300 text-green-700 bg-green-50"}
-                                ${task.difficulty === "Medium" && "border-yellow-300 text-yellow-700 bg-yellow-50"}
-                                ${task.difficulty === "Hard" && "border-red-300 text-red-700 bg-red-50"}
-                              `}
-                            >
-                              {task.difficulty}
-                            </Badge>
-                          </div>
-                          <p className={`text-sm ${isCompleted ? "text-green-700" : "text-gray-600"}`}>
-                            {task.description}
-                          </p>
+                      </div>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-2xl">{task.icon}</span>
+                          <h3 className={`text-lg font-semibold ${
+                            isCompleted
+                              ? 'line-through text-gray-500 dark:text-gray-500'
+                              : 'text-gray-800 dark:text-white'
+                          }`}>
+                            {task.task}
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                          <Clock className="h-4 w-4" />
+                          <span>{task.time}</span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+
+                      <Badge variant={isCompleted ? "default" : "outline"} className={
+                        isCompleted
+                          ? "bg-green-500 text-white"
+                          : "border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-400"
+                      }>
+                        {isCompleted ? "Done! ✓" : "Try it!"}
+                      </Badge>
+                    </div>
+                  </motion.div>
                 );
               })}
             </CardContent>
           </Card>
-        )}
+        </motion.div>
 
-        <Card className="border-2 border-purple-200 bg-white/70 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <Target className="h-6 w-6 text-purple-500" />
-              Skills You'll Master
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {career.requiredSkills.map((skill, index) => (
-                <Badge
-                  key={index}
-                  className="bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300 px-4 py-2 text-sm"
+        {/* Progress Tracker */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="mb-8 border-2 shadow-lg dark:bg-zinc-900 dark:border-zinc-800">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl dark:text-white">Your Progress</CardTitle>
+                  <CardDescription className="dark:text-gray-400">Keep going! You're doing amazing! 🌟</CardDescription>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl dark:text-white font-bold">
+                    {Math.round(completionPercentage)}%
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Complete</div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Progress value={completionPercentage} className="h-3 mb-4 dark:bg-zinc-800" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                  <Trophy className="h-8 w-8 text-yellow-500" />
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Tasks Done</div>
+                    <div className="font-semibold text-lg dark:text-white">{completedTasks.size} / {tasks.length}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                  <Star className="h-8 w-8 text-purple-500" />
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Skills to Learn</div>
+                    <div className="font-semibold text-lg dark:text-white">{career.requiredSkills.length}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                  <Clock className="h-8 w-8 text-blue-500" />
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Est. Time</div>
+                    <div className="font-semibold text-lg dark:text-white">{tasks.length * 20} mins</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Learning Modules */}
+        <div className="mb-8">
+          <h2 className="text-3xl mb-6 dark:text-white font-bold">
+            📖 Your Learning Modules
+          </h2>
+
+          {resources.length > 0 ? (
+            <div className="space-y-4">
+              {resources.map((resource, index) => (
+                <motion.div
+                  key={resource.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * index }}
                 >
-                  {skill}
-                </Badge>
+                  <Card className="border-2 hover:border-purple-300 hover:shadow-xl transition-all dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-purple-500">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-6">
+                        <div className="flex-shrink-0">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                            {index + 1}
+                          </div>
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h3 className="text-xl mb-1 dark:text-white font-semibold">
+                                {resource.title}
+                              </h3>
+                              <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                {resource.provider}
+                              </p>
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className="bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800"
+                            >
+                              {resource.type}
+                            </Badge>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-4 mb-4">
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <Clock className="h-4 w-4 text-purple-500" />
+                              <span>{resource.duration}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <TrendingUp className="h-4 w-4 text-purple-500" />
+                              <span>{resource.level}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+                              <Play className="mr-2 h-4 w-4" />
+                              Start Learning
+                            </Button>
+                            <Button variant="outline" className="dark:text-white dark:border-gray-600 dark:hover:bg-zinc-800">
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              Preview
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="flex-shrink-0 hidden md:block">
+                          <div className="text-center">
+                            <div className="w-12 h-12 rounded-full border-4 border-gray-200 dark:border-zinc-700 flex items-center justify-center text-gray-300 dark:text-zinc-600 mb-2">
+                              <CheckCircle2 className="h-6 w-6" />
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Not Started</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          ) : (
+            <Card className="border-2 dark:bg-zinc-900 dark:border-zinc-800">
+              <CardContent className="py-12 text-center">
+                <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
+                  We're curating awesome resources for this career! 🎉
+                </p>
+                <p className="text-gray-500 dark:text-gray-500">Check back soon for personalized courses.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Skills to Unlock */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="border-2 shadow-lg bg-gradient-to-br from-orange-50 to-pink-50 dark:from-orange-900/20 dark:to-pink-900/20 dark:border-zinc-800">
+            <CardHeader>
+              <CardTitle className="text-2xl flex items-center gap-2 dark:text-white">
+                <Star className="h-6 w-6 text-orange-500" />
+                Skills You'll Master 🔥
+              </CardTitle>
+              <CardDescription className="dark:text-gray-400">
+                These are the superpowers you'll unlock on this journey!
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                {career.requiredSkills.map((skill) => (
+                  <Badge
+                    key={skill}
+                    className="px-4 py-2 text-base bg-white border-2 border-orange-200 text-orange-700 hover:bg-orange-50 dark:bg-zinc-900 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-zinc-800"
+                  >
+                    ✨ {skill}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 text-center"
+        >
+          <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 dark:border-purple-800">
+            <CardContent className="py-8">
+              <h3 className="text-2xl mb-3 dark:text-white font-bold">
+                Ready to Start? 🎯
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-xl mx-auto">
+                Your journey to becoming an amazing {career.title.toLowerCase()} starts now!
+                Let's do this! 💪
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg rounded-full shadow-lg"
+                >
+                  Begin First Course 🚀
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:border-purple-500 dark:text-purple-400 dark:hover:bg-zinc-800 px-8 py-6 text-lg rounded-full"
+                  onClick={onBack}
+                >
+                  Explore More Careers
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
