@@ -100,7 +100,14 @@ const careerTasks: { [key: string]: Array<{ id: string; task: string; time: stri
   ],
 };
 
+
 export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
+  console.log("🎯 Career received:", career.id, career.title);
+  console.log("📋 Available task keys:", Object.keys(careerTasks));
+  
+  const tasks = careerTasks[career.id] || [];
+  console.log("✅ Tasks found:", tasks.length);
+  
   const resources = learningResources[career.id] || [];
   const tasks = careerTasks[career.id] || [];
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
