@@ -10,16 +10,14 @@ interface LearningPathPageProps {
   onBack: () => void;
 }
 
-interface Task {
+interface CareerTask {
   id: string;
   title: string;
   description: string;
   difficulty: "Easy" | "Medium" | "Hard";
 }
 
-// Career tasks mapped by career ID - matches backend career names converted to IDs
-const careerTasks: { [key: string]: Task[] } = {
-  // Technology Careers
+const careerTasks: { [key: string]: CareerTask[] } = {
   "software-engineer": [
     { id: "1", title: "Build a Simple Calculator", description: "Create a calculator app using HTML, CSS, and JavaScript", difficulty: "Easy" },
     { id: "2", title: "Create Your Portfolio Website", description: "Design and code your personal portfolio from scratch", difficulty: "Medium" },
@@ -44,8 +42,6 @@ const careerTasks: { [key: string]: Task[] } = {
     { id: "3", title: "Complete TryHackMe Room", description: "Finish a beginner-level cybersecurity challenge", difficulty: "Medium" },
     { id: "4", title: "Perform a Security Audit", description: "Check your home network for vulnerabilities", difficulty: "Hard" },
   ],
-  
-  // Creative Careers
   "ux/ui-designer": [
     { id: "1", title: "Redesign a Mobile App", description: "Take an existing app and create an improved design mockup", difficulty: "Easy" },
     { id: "2", title: "Create a Design System", description: "Build a basic design system with colors, fonts, and components", difficulty: "Medium" },
@@ -64,8 +60,6 @@ const careerTasks: { [key: string]: Task[] } = {
     { id: "3", title: "Write 5 Blog Posts", description: "Write informative articles on topics you're passionate about", difficulty: "Medium" },
     { id: "4", title: "Grow to 100 Followers", description: "Build an engaged audience on a social platform", difficulty: "Hard" },
   ],
-  
-  // Business Careers
   "entrepreneur": [
     { id: "1", title: "Identify a Problem", description: "Find 3 problems people face daily that could be solved with a business", difficulty: "Easy" },
     { id: "2", title: "Create a Business Plan", description: "Write a one-page business plan for a startup idea", difficulty: "Medium" },
@@ -90,8 +84,6 @@ const careerTasks: { [key: string]: Task[] } = {
     { id: "3", title: "File Mock Tax Returns", description: "Practice filling out tax forms with sample data", difficulty: "Medium" },
     { id: "4", title: "Audit Financial Statements", description: "Review a company's balance sheet for errors or inconsistencies", difficulty: "Hard" },
   ],
-  
-  // Healthcare Careers
   "doctor": [
     { id: "1", title: "Shadow a Healthcare Professional", description: "Spend a day observing a doctor or nurse at work", difficulty: "Easy" },
     { id: "2", title: "Learn First Aid", description: "Complete an online first aid and CPR certification course", difficulty: "Medium" },
@@ -110,8 +102,6 @@ const careerTasks: { [key: string]: Task[] } = {
     { id: "3", title: "Understand Prescriptions", description: "Learn how to read and interpret medical prescriptions", difficulty: "Medium" },
     { id: "4", title: "Research Drug Interactions", description: "Study which medications shouldn't be taken together and why", difficulty: "Hard" },
   ],
-  
-  // Other Careers
   "teacher": [
     { id: "1", title: "Create a Lesson Plan", description: "Plan a 30-minute lesson on any topic of your choice", difficulty: "Easy" },
     { id: "2", title: "Tutor Someone", description: "Help a younger student or friend learn something new", difficulty: "Medium" },
@@ -153,9 +143,9 @@ const careerTasks: { [key: string]: Task[] } = {
 export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   
-  const careerTasksList = careerTasks[career.id] || [];
-  const completionPercentage = careerTasksList.length > 0 
-  ? Math.round((completedTasks.size / careerTasksList.length) * 100)
+  const availableTasks = careerTasks[career.id] || [];
+  const completionPercentage = availableTasks.length > 0 
+    ? Math.round((completedTasks.size / availableTasks.length) * 100) 
     : 0;
 
   const toggleTask = (taskId: string) => {
@@ -173,7 +163,6 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-6">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <Button
           onClick={onBack}
           variant="ghost"
@@ -182,7 +171,6 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
           ← Back to Results
         </Button>
 
-        {/* Hero Section */}
         <Card className="mb-8 overflow-hidden border-2 border-purple-200 bg-gradient-to-br from-purple-500 to-pink-500">
           <CardContent className="p-8 text-white">
             <div className="flex items-center gap-2 mb-3">
@@ -196,7 +184,6 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
           </CardContent>
         </Card>
 
-        {/* Learning Overview */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card className="border-2 border-blue-200 bg-white/70 backdrop-blur">
             <CardContent className="p-6 text-center">
@@ -231,8 +218,7 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
           </Card>
         </div>
 
-        {/* Try This Career Out Section */}
-        {careerTasksList.length > 0 && (
+        {availableTasks.length > 0 && (
           <Card className="mb-8 border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -254,7 +240,7 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {careerTasksList.map((task) => {
+              {availableTasks.map((task) => {
                 const isCompleted = completedTasks.has(task.id);
                 return (
                   <Card
@@ -304,7 +290,6 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
           </Card>
         )}
 
-        {/* Skills to Master */}
         <Card className="border-2 border-purple-200 bg-white/70 backdrop-blur">
           <CardHeader>
             <CardTitle className="text-2xl flex items-center gap-2">
