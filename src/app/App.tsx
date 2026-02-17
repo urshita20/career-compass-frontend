@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Home } from "@/app/components/home";
 import { SwipeAssessment, SwipeAnswers } from "@/app/components/swipe-assessment";
 import { ResultsDashboard } from "@/app/components/results-dashboard";
-import { careerexplorer } from "@/app/components/career-explorer";
+import { CareerExplorer } from "@/app/components/career-explorer";
 import { LearningPathPage } from "@/app/components/learning-path-page";
 import { MarketInsights } from "@/app/components/market-insights";
 import { InternshipHub } from "@/app/components/internship-hub";
