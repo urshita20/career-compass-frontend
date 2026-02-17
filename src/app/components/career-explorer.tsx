@@ -5,6 +5,15 @@ import { RadioGroup, RadioGroupItem } from "@/app/components/ui/radio-group";
 import { Label } from "@/app/components/ui/label";
 import { Progress } from "@/app/components/ui/progress";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+export function CareerExplorer({ onBack }: { onBack: () => void }) {
+  return (
+    <div>
+      <h1>Career Explorer</h1>
+      <button onClick={onBack}>Back</button>
+      {/* Render list of careers or other UI */}
+    </div>
+  );
+}
 
 interface Question {
   id: number;
