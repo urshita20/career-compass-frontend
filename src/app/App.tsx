@@ -12,12 +12,21 @@ import { SkillGapTool } from "@/app/components/skill-gap-tool";
 import { careerPaths, CareerPath } from "@/app/components/career-data";
 import { submitAssessment } from "@/app/components/api-service";
 
-type View = "home" | "assessment" | "results" | "explorer" | "learning" | "market" | "internships" | "resources" | "skillgap";
+type View =
+  | "home"
+  | "assessment"
+  | "results"
+  | "explorer"
+  | "learning"
+  | "market"
+  | "internships"
+  | "resources"
+  | "skillgap";
 
 function App() {
   const [currentView, setCurrentView] = useState<View>("home");
   const [assessmentResults, setAssessmentResults] = useState<CareerPath[]>([]);
-  const [aiInsight, setAiInsight] = useState<string | null>(null); // NEW: Store AI insight
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [selectedLearningCareer, setSelectedLearningCareer] = useState<CareerPath | null>(null);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">("right");
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -36,18 +45,11 @@ function App() {
 
   const handleAssessmentComplete = async (answers: SwipeAnswers) => {
     try {
-      console.log("🚀 Submitting assessment...");
-      
-      // Call backend API with assessment answers
       const { careers, aiInsight: insight } = await submitAssessment(answers);
-      
-      console.log("✅ Received careers:", careers.length);
-      console.log("✅ Received AI insight:", insight);
-      
+
       if (careers.length > 0) {
-        // Map backend careers to frontend format
         const formattedCareers = careers.map((career) => ({
-          id: career.name.toLowerCase().replace(/\s+/g, '-'),
+          id: career.name.toLowerCase().replace(/\s+/g, "-"),
           title: career.name,
           category: career.stream || "General",
           description: career.description,
@@ -61,39 +63,32 @@ function App() {
           pros: ["High demand", "Good growth", "Rewarding work"],
           cons: ["Requires dedication", "Continuous learning needed"],
         }));
-        
+
         setAssessmentResults(formattedCareers as CareerPath[]);
-        
-        // Store AI insight
-        if (insight && insight.insight) {
-          console.log("💡 Setting AI insight:", insight.insight);
-          setAiInsight(insight.insight);
-        } else {
-          console.log("⚠️ No AI insight received");
-          setAiInsight(null);
-        }
+        setAiInsight(insight?.insight || null);
       } else {
-        console.log("⚠️ No careers returned, using fallback");
-        // Fallback to local data if API fails
-        const scoredCareers = careerPaths.map((career) => {
-          let score = 70 + Math.floor(Math.random() * 25);
-          return { ...career, matchScore: score };
-        });
+        const scoredCareers = careerPaths.map((career) => ({
+          ...career,
+          matchScore: 70 + Math.floor(Math.random() * 25),
+        }));
         setAssessmentResults(scoredCareers.slice(0, 5));
-        setAiInsight("Our AI is taking a quick break, but based on your responses, you're showing great potential across multiple career paths! Keep exploring and trying new things.");
+        setAiInsight(
+          "Our AI is taking a quick break, but based on your responses, you're showing great potential across multiple career paths! Keep exploring and trying new things."
+        );
       }
-      
+
       setSlideDirection("right");
       setCurrentView("results");
     } catch (error) {
-      console.error("❌ Failed to get recommendations:", error);
-      // Fallback
+      console.error(error);
       const scoredCareers = careerPaths.map((career) => ({
         ...career,
-        matchScore: 70 + Math.floor(Math.random() * 25)
+        matchScore: 70 + Math.floor(Math.random() * 25),
       }));
       setAssessmentResults(scoredCareers.slice(0, 5));
-      setAiInsight("We're having trouble connecting to our AI right now, but your results are ready! You're showing interest across diverse fields - keep exploring!");
+      setAiInsight(
+        "We're having trouble connecting to our AI right now, but your results are ready! You're showing interest across diverse fields - keep exploring!"
+      );
       setSlideDirection("right");
       setCurrentView("results");
     }
@@ -107,7 +102,7 @@ function App() {
   const handleBackToHome = () => {
     setSlideDirection("left");
     setCurrentView("home");
-    setAiInsight(null); // Clear insight when going home
+    setAiInsight(null);
   };
 
   const handleExploreCareers = () => {
@@ -151,10 +146,7 @@ function App() {
       x: direction === "right" ? "100%" : "-100%",
       opacity: 0,
     }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
+    center: { x: 0, opacity: 1 },
     exit: (direction: "left" | "right") => ({
       x: direction === "right" ? "-100%" : "100%",
       opacity: 0,
@@ -187,7 +179,7 @@ function App() {
             />
           </motion.div>
         )}
-        
+
         {currentView === "assessment" && (
           <motion.div
             key="assessment"
@@ -199,13 +191,10 @@ function App() {
             transition={{ type: "tween", duration: 0.4 }}
             className="w-full h-full"
           >
-            <SwipeAssessment
-              onComplete={handleAssessmentComplete}
-              onBack={handleBackToHome}
-            />
+            <SwipeAssessment onComplete={handleAssessmentComplete} onBack={handleBackToHome} />
           </motion.div>
         )}
-        
+
         {currentView === "results" && (
           <motion.div
             key="results"
@@ -226,7 +215,7 @@ function App() {
             />
           </motion.div>
         )}
-        
+
         {currentView === "explorer" && (
           <motion.div
             key="explorer"
@@ -238,10 +227,13 @@ function App() {
             transition={{ type: "tween", duration: 0.4 }}
             className="w-full h-full"
           >
-            <CareerExplorer onBack={handleBackToHome} />
+            <CareerExplorer
+              onBack={handleBackToHome}
+              onStartLearning={handleStartLearning} // ✅ REQUIRED
+            />
           </motion.div>
         )}
-        
+
         {currentView === "learning" && selectedLearningCareer && (
           <motion.div
             key="learning"
@@ -253,10 +245,7 @@ function App() {
             transition={{ type: "tween", duration: 0.4 }}
             className="w-full h-full"
           >
-            <LearningPathPage
-              career={selectedLearningCareer}
-              onBack={handleBackFromLearning}
-            />
+            <LearningPathPage career={selectedLearningCareer} onBack={handleBackFromLearning} />
           </motion.div>
         )}
 
