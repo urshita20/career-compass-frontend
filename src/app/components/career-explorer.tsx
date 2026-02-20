@@ -58,60 +58,94 @@ function generateTasksForCareer(title: string, skills: string[]) {
 }
 
 // ─── DB CAREER CARD ───────────────────────────────────────────────────────────
+
+function emojiForCareer(title: string): string {
+  const t = title.toLowerCase();
+  if (t.includes("software") || t.includes("web developer") || t.includes("programmer")) return "💻";
+  if (t.includes("data scientist") || t.includes("data analyst") || t.includes("data engineer")) return "📊";
+  if (t.includes("machine learning") || t.includes("artificial intelligence")) return "🤖";
+  if (t.includes("graphic design") || t.includes("visual artist") || t.includes("art director")) return "🎨";
+  if (t.includes("ux") || t.includes("user experience") || t.includes("user interface")) return "🖌️";
+  if (t.includes("doctor") || t.includes("physician") || t.includes("medical")) return "🩺";
+  if (t.includes("nurs")) return "💊";
+  if (t.includes("teacher") || t.includes("instructor") || t.includes("professor")) return "📚";
+  if (t.includes("cybersecurity") || t.includes("information security")) return "🛡️";
+  if (t.includes("network engineer") || t.includes("network admin")) return "🌐";
+  if (t.includes("market")) return "📣";
+  if (t.includes("financial") || t.includes("accountant") || t.includes("auditor")) return "💰";
+  if (t.includes("lawyer") || t.includes("attorney") || t.includes("legal")) return "⚖️";
+  if (t.includes("chef") || t.includes("cook") || t.includes("culinary")) return "👨‍🍳";
+  if (t.includes("architect")) return "🏛️";
+  if (t.includes("mechanic") || t.includes("technician")) return "🔧";
+  if (t.includes("pilot") || t.includes("aviation")) return "✈️";
+  if (t.includes("journalist") || t.includes("writer") || t.includes("editor")) return "✍️";
+  if (t.includes("psycholog") || t.includes("therapist") || t.includes("counselor")) return "🧠";
+  if (t.includes("scientist") || t.includes("biolog") || t.includes("chemist") || t.includes("research")) return "🔬";
+  if (t.includes("environment") || t.includes("ecolog")) return "🌿";
+  if (t.includes("artist") || t.includes("animator") || t.includes("illustrat")) return "🎭";
+  if (t.includes("manager") || t.includes("director") || t.includes("executive")) return "📋";
+  if (t.includes("sales")) return "🤝";
+  if (t.includes("engineer")) return "⚙️";
+  if (t.includes("social work") || t.includes("community")) return "🤲";
+  if (t.includes("police") || t.includes("detective") || t.includes("investigat")) return "🚔";
+  if (t.includes("photog") || t.includes("videog")) return "📷";
+  if (t.includes("music") || t.includes("sound")) return "🎵";
+  return "💼";
+}
+
 function DbCareerCard({ career, onTryOut }: { career: DbCareer; onTryOut: (title: string, tasks: any[]) => void }) {
-  const [expanded, setExpanded] = useState(false);
   const skills: string[] = Array.isArray(career.skills)
     ? career.skills
     : typeof career.skills === "string"
       ? JSON.parse(career.skills || "[]")
       : [];
 
+  const emoji = emojiForCareer(career.title);
+
+  // Build tags: bright outlook first, then top 2 skills
+  const tags: string[] = [];
+  if (career.bright_outlook) tags.push("⭐ Bright Outlook");
+  if (skills[0]) tags.push(skills[0]);
+  if (skills[1]) tags.push(skills[1]);
+
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
-      <div
-        className="p-4 cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className="font-semibold text-gray-800 text-sm">{career.title}</h3>
-              {career.bright_outlook ? (
-                <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">⭐ Bright Outlook</span>
-              ) : null}
-            </div>
-            <p className={`text-xs text-gray-500 leading-relaxed ${expanded ? "" : "line-clamp-2"}`}>
-              {career.description}
-            </p>
-          </div>
-          <span className="text-gray-300 text-lg flex-shrink-0">{expanded ? "▲" : "▼"}</span>
-        </div>
-        {expanded && skills.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-50">
-            <p className="text-xs font-medium text-gray-400 mb-2">Key Skills</p>
-            <div className="flex flex-wrap gap-1.5">
-              {skills.slice(0, 8).map((skill) => (
-                <span key={skill} className="text-xs px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full">
-                  {skill}
-                </span>
-              ))}
-            </div>
+    <Card className="border-2 hover:border-orange-400 hover:shadow-xl transition-all cursor-pointer dark:bg-zinc-900 dark:border-zinc-800 group">
+      <CardHeader>
+        <div className="text-4xl mb-2">{emoji}</div>
+        <CardTitle className="text-xl dark:text-white group-hover:text-orange-500 transition-colors">
+          {career.title}
+        </CardTitle>
+        <CardDescription className="text-sm dark:text-gray-400 line-clamp-2">
+          {career.description}
+        </CardDescription>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="text-xs px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 rounded-full font-medium"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         )}
-      </div>
-      <div className="px-4 pb-4">
-        <button
-          onClick={(e) => { e.stopPropagation(); onTryOut(career.title, generateTasksForCareer(career.title, skills)); }}
-          className="w-full py-2 rounded-xl text-xs font-semibold text-orange-600 border border-orange-200 bg-orange-50 hover:bg-orange-100 hover:border-orange-400 transition-all"
+      </CardHeader>
+      <CardContent>
+        <Button
+          variant="outline"
+          className="w-full border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-orange-900/20"
+          onClick={() => onTryOut(career.title, generateTasksForCareer(career.title, skills))}
         >
           ⚡ Try This Career Out
-        </button>
-      </div>
-    </div>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
 // ─── BROWSE ALL CAREERS SECTION ───────────────────────────────────────────────
+
 function BrowseAllCareers({ onTryOut }: { onTryOut: (title: string, tasks: any[]) => void }) {
   const [careers, setCareers] = useState<DbCareer[]>([]);
   const [displayed, setDisplayed] = useState<DbCareer[]>([]);
