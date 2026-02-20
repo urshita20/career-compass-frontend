@@ -19,8 +19,46 @@ interface DbCareer {
   bright_outlook: boolean | number;
 }
 
+// ─── GENERATE TASKS FOR ANY CAREER ───────────────────────────────────────────
+function generateTasksForCareer(title: string, skills: string[]) {
+  const topSkill = skills[0] || "relevant skills";
+  const skill2 = skills[1] || "core concepts";
+  return [
+    {
+      id: "gen-1",
+      title: `Watch a "Day in the Life" video for ${title}`,
+      description: `Search YouTube for "day in the life ${title}" and watch one video. Note 3 things that surprised you.`,
+      duration: "15 min",
+      icon: "🎬",
+    },
+    {
+      id: "gen-2",
+      title: `Research what a ${title} actually does`,
+      description: `Read a job listing on LinkedIn or Indeed. List the top 3 daily tasks a ${title} does.`,
+      duration: "20 min",
+      icon: "📋",
+    },
+    {
+      id: "gen-3",
+      title: `Try a beginner task using "${topSkill}"`,
+      description: `Find a free beginner exercise or tutorial related to ${topSkill}. Spend 20 minutes and note how it felt.`,
+      duration: "20 min",
+      icon: "💡",
+      requiresImage: true,
+      imagePrompt: `Screenshot or photo of your ${topSkill} attempt`,
+    },
+    {
+      id: "gen-4",
+      title: `Explore "${skill2}" for this career`,
+      description: `Find one free resource (video, article, or quiz) about ${skill2} in the context of ${title}. Write 2-3 takeaways.`,
+      duration: "15 min",
+      icon: "🔍",
+    },
+  ];
+}
+
 // ─── DB CAREER CARD ───────────────────────────────────────────────────────────
-function DbCareerCard({ career }: { career: DbCareer }) {
+function DbCareerCard({ career, onTryOut }: { career: DbCareer; onTryOut: (title: string, tasks: any[]) => void }) {
   const [expanded, setExpanded] = useState(false);
   const skills: string[] = Array.isArray(career.skills)
     ? career.skills
@@ -29,42 +67,52 @@ function DbCareerCard({ career }: { career: DbCareer }) {
       : [];
 
   return (
-    <div
-      className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:shadow-md hover:border-orange-200 transition-all cursor-pointer"
-      onClick={() => setExpanded(!expanded)}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-semibold text-gray-800 text-sm">{career.title}</h3>
-            {career.bright_outlook ? (
-              <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">⭐ Bright Outlook</span>
-            ) : null}
+    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
+      <div
+        className="p-4 cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3 className="font-semibold text-gray-800 text-sm">{career.title}</h3>
+              {career.bright_outlook ? (
+                <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">⭐ Bright Outlook</span>
+              ) : null}
+            </div>
+            <p className={`text-xs text-gray-500 leading-relaxed ${expanded ? "" : "line-clamp-2"}`}>
+              {career.description}
+            </p>
           </div>
-          <p className={`text-xs text-gray-500 leading-relaxed ${expanded ? "" : "line-clamp-2"}`}>
-            {career.description}
-          </p>
+          <span className="text-gray-300 text-lg flex-shrink-0">{expanded ? "▲" : "▼"}</span>
         </div>
-        <span className="text-gray-300 text-lg flex-shrink-0">{expanded ? "▲" : "▼"}</span>
+        {expanded && skills.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-50">
+            <p className="text-xs font-medium text-gray-400 mb-2">Key Skills</p>
+            <div className="flex flex-wrap gap-1.5">
+              {skills.slice(0, 8).map((skill) => (
+                <span key={skill} className="text-xs px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-      {expanded && skills.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-50">
-          <p className="text-xs font-medium text-gray-400 mb-2">Key Skills</p>
-          <div className="flex flex-wrap gap-1.5">
-            {skills.slice(0, 8).map((skill) => (
-              <span key={skill} className="text-xs px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full">
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="px-4 pb-4">
+        <button
+          onClick={(e) => { e.stopPropagation(); onTryOut(career.title, generateTasksForCareer(career.title, skills)); }}
+          className="w-full py-2 rounded-xl text-xs font-semibold text-orange-600 border border-orange-200 bg-orange-50 hover:bg-orange-100 hover:border-orange-400 transition-all"
+        >
+          ⚡ Try This Career Out
+        </button>
+      </div>
     </div>
   );
 }
 
 // ─── BROWSE ALL CAREERS SECTION ───────────────────────────────────────────────
-function BrowseAllCareers() {
+function BrowseAllCareers({ onTryOut }: { onTryOut: (title: string, tasks: any[]) => void }) {
   const [careers, setCareers] = useState<DbCareer[]>([]);
   const [displayed, setDisplayed] = useState<DbCareer[]>([]);
   const [search, setSearch] = useState("");
@@ -161,7 +209,7 @@ function BrowseAllCareers() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {displayed.map((c) => (
-              <DbCareerCard key={c.onet_code} career={c} />
+              <DbCareerCard key={c.onet_code} career={c} onTryOut={onTryOut} />
             ))}
           </div>
           {displayed.length === 0 && (
@@ -479,6 +527,29 @@ function CareerCard({
 
 export function CareerExplorer({ onBack, onStartLearning }: { onBack: () => void; onStartLearning?: (career: any) => void }) {
   const [selectedCareer, setSelectedCareer] = useState<(typeof careers)[0] | null>(null);
+  const [dbCareerTryOut, setDbCareerTryOut] = useState<{ title: string; tasks: any[] } | null>(null);
+
+  // DB career Try It Out view
+  if (dbCareerTryOut) {
+    return (
+      <div className="min-h-screen bg-amber-50/30 dark:bg-zinc-950 px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <Button
+            onClick={() => setDbCareerTryOut(null)}
+            variant="ghost"
+            className="mb-6 text-gray-500 hover:text-gray-800"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Careers
+          </Button>
+          <TryCareerOut
+            careerTitle={dbCareerTryOut.title}
+            tasks={dbCareerTryOut.tasks}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (selectedCareer) {
     return (
@@ -518,7 +589,7 @@ export function CareerExplorer({ onBack, onStartLearning }: { onBack: () => void
           </p>
         </div>
 
-        <BrowseAllCareers />
+        <BrowseAllCareers onTryOut={(title, tasks) => setDbCareerTryOut({ title, tasks })} />
 
         {/* ── Try It Out: 6 curated careers with interactive tasks ── */}
         <div className="text-center mb-8">
