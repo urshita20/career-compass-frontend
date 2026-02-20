@@ -1,7 +1,7 @@
 export async function fetchCareers() {
   try {
     const response = await fetch(
-      "https://career-compass-backend.onrender.com/api/careers"
+      "https://career-compass-backend-1-1fnz.onrender.com/api/careers"
     );
 
     return await response.json();

@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://career-compass-backend-nzny.onrender.com/api/careers";
+const API_BASE_URL = "https://career-compass-backend-1-1fnz.onrender.com/api/careers";
 
 export interface BackendCareer {
   id: number;

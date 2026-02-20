@@ -1,6 +1,6 @@
 import type { AnalysisResult, TaskSubmission, UserContext } from '../types/analysis';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://career-compass-backend-nzny.onrender.com';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://career-compass-backend-1-1fnz.onrender.com';
 
 export async function submitCareerAnalysis(
   careerTitle: string,
