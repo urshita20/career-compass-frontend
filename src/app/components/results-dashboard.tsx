@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/ta
 import { ArrowLeft, TrendingUp, Briefcase, BookOpen, Target, ExternalLink, Sparkles, CheckCircle2 } from "lucide-react";
 import { CareerPath, learningResources, generateSkillGaps } from "./career-data";
 import { motion } from "motion/react";
+import { useRef } from "react";
 
 interface ResultsDashboardProps {
   recommendedCareers: CareerPath[];
@@ -14,16 +15,18 @@ interface ResultsDashboardProps {
   onStartLearning: (career: CareerPath) => void;
 }
 
-export function ResultsDashboard({ 
-  recommendedCareers, 
-  aiInsight, 
-  onBack, 
-  onExploreMore, 
-  onStartLearning 
+export function ResultsDashboard({
+  recommendedCareers,
+  aiInsight,
+  onBack,
+  onExploreMore,
+  onStartLearning
 }: ResultsDashboardProps) {
   const topCareer = recommendedCareers[0];
   const skillGaps = generateSkillGaps(topCareer);
   const resources = learningResources[topCareer.id] || [];
+  const detailsRef = useRef<HTMLDivElement>(null);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-orange-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-300">
@@ -147,8 +150,9 @@ export function ResultsDashboard({
                   size="lg"
                   variant="outline"
                   className="flex-1 border-2 border-white text-white hover:bg-white/10 text-lg h-14 rounded-full"
+                  onClick={() => detailsRef.current?.scrollIntoView({ behavior: "smooth" })}
                 >
-                  View Details
+                  View Details ↓
                 </Button>
               </div>
             </CardContent>
@@ -157,6 +161,8 @@ export function ResultsDashboard({
 
         {/* Detailed Tabs for Top Career */}
         <motion.div
+          ref={detailsRef}
+
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -208,8 +214,8 @@ export function ResultsDashboard({
                     </h3>
                     <Badge className={
                       topCareer.demandLevel === "High" ? "bg-green-500" :
-                      topCareer.demandLevel === "Medium" ? "bg-yellow-500" :
-                      "bg-blue-500"
+                        topCareer.demandLevel === "Medium" ? "bg-yellow-500" :
+                          "bg-blue-500"
                     }>
                       {topCareer.demandLevel} Demand
                     </Badge>

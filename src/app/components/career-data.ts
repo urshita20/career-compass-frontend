@@ -349,7 +349,43 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       url: "https://academy.hubspot.com/courses/content-marketing",
     },
   ],
+  "financial-analyst": [
+    { id: "fa-1", title: "Financial Markets", provider: "Yale (Coursera)", type: "Course", duration: "7 weeks", level: "Beginner", url: "https://www.coursera.org/learn/financial-markets-global" },
+    { id: "fa-2", title: "Excel Skills for Business", provider: "Macquarie Uni (Coursera)", type: "Course", duration: "4 months", level: "Beginner", url: "https://www.coursera.org/specializations/excel" },
+    { id: "fa-3", title: "CFA Level 1 Prep", provider: "CFA Institute", type: "Certification", duration: "6 months", level: "Advanced", url: "https://www.cfainstitute.org/programs/cfa" },
+  ],
+  "healthcare-admin": [
+    { id: "ha-1", title: "Healthcare Organization & Management", provider: "Emory Uni (Coursera)", type: "Course", duration: "5 weeks", level: "Beginner", url: "https://www.coursera.org/learn/healthcare-organization-management" },
+    { id: "ha-2", title: "Healthcare Law, Ethics & Compliance", provider: "Coursera", type: "Course", duration: "4 weeks", level: "Intermediate", url: "https://www.coursera.org/learn/healthcare-law" },
+    { id: "ha-3", title: "Hospital Administration Certificate", provider: "edX", type: "Certification", duration: "3 months", level: "Intermediate", url: "https://www.edx.org/certificates/professional-certificate/ritx-healthcare-administration" },
+  ],
+  "content-creator": [
+    { id: "cc-1", title: "Content Strategy for Professionals", provider: "Northwestern (Coursera)", type: "Course", duration: "4 weeks", level: "Beginner", url: "https://www.coursera.org/learn/content-strategy" },
+    { id: "cc-2", title: "SEO Fundamentals", provider: "SEMrush Academy", type: "Certification", duration: "10 hours", level: "Beginner", url: "https://www.semrush.com/academy/courses/seo-fundamentals-course-with-greg-gifford/" },
+    { id: "cc-3", title: "Video Production for Beginners", provider: "Skillshare", type: "Course", duration: "8 hours", level: "Beginner", url: "https://www.skillshare.com/en/browse/video-production" },
+  ],
+  "cybersecurity": [
+    { id: "cs-1", title: "Google Cybersecurity Certificate", provider: "Google (Coursera)", type: "Certification", duration: "6 months", level: "Beginner", url: "https://www.coursera.org/professional-certificates/google-cybersecurity" },
+    { id: "cs-2", title: "CompTIA Security+ Prep", provider: "CompTIA / Udemy", type: "Certification", duration: "3 months", level: "Intermediate", url: "https://www.udemy.com/course/comptia-security-cert-sy0-701-the-total-course/" },
+    { id: "cs-3", title: "Cybersecurity Specialization", provider: "University of Maryland (Coursera)", type: "Course", duration: "6 months", level: "Intermediate", url: "https://www.coursera.org/specializations/cyber-security" },
+  ],
+  "environmental-scientist": [
+    { id: "es-1", title: "Introduction to Environmental Science", provider: "Dartmouth (edX)", type: "Course", duration: "6 weeks", level: "Beginner", url: "https://www.edx.org/learn/environmental-science/dartmouth-college-introduction-to-environmental-science" },
+    { id: "es-2", title: "GIS Mapping: The Science of Where", provider: "Esri (Coursera)", type: "Course", duration: "4 weeks", level: "Beginner", url: "https://www.coursera.org/learn/gis-mapping-spatial-analysis" },
+    { id: "es-3", title: "Environmental Management & Ethics", provider: "edX", type: "Course", duration: "8 weeks", level: "Intermediate", url: "https://www.edx.org/learn/environmental-policy/university-of-queensland-environmental-management" },
+  ],
+  "teacher": [
+    { id: "t-1", title: "Foundations of Teaching for Learning", provider: "Commonwealth Edu Trust (Coursera)", type: "Course", duration: "8 weeks", level: "Beginner", url: "https://www.coursera.org/learn/teaching" },
+    { id: "t-2", title: "The Science of Learning", provider: "University of Auckland (Coursera)", type: "Course", duration: "4 weeks", level: "Beginner", url: "https://www.coursera.org/learn/science-of-learning" },
+    { id: "t-3", title: "Curriculum Design", provider: "National Geographic Society (Coursera)", type: "Course", duration: "3 weeks", level: "Intermediate", url: "https://www.coursera.org/learn/curriculum-design" },
+  ],
+  "mechanical-engineer": [
+    { id: "me-1", title: "Mechanical Engineering Masterclass", provider: "Udemy", type: "Course", duration: "40 hours", level: "Beginner", url: "https://www.udemy.com/course/mechanical-engineering-masterclass/" },
+    { id: "me-2", title: "Introduction to Engineering Mechanics", provider: "Georgia Tech (Coursera)", type: "Course", duration: "5 weeks", level: "Beginner", url: "https://www.coursera.org/learn/engineering-mechanics-statics" },
+    { id: "me-3", title: "CAD/CAM Fundamentals with SolidWorks", provider: "edX", type: "Course", duration: "8 weeks", level: "Intermediate", url: "https://www.edx.org/learn/mechanical-engineering" },
+  ],
 };
+
 
 export function generateSkillGaps(careerPath: CareerPath): SkillGap[] {
   // Mock skill gaps - in a real app, this would compare user's current skills
