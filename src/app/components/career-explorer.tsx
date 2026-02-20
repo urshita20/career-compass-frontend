@@ -302,7 +302,7 @@ function CareerCard({
 
 // ─── MAIN CAREER EXPLORER ────────────────────────────────────────────────────
 
-export function CareerExplorer({ onBack }: { onBack: () => void }) {
+export function CareerExplorer({ onBack, onStartLearning }: { onBack: () => void; onStartLearning?: (career: any) => void }) {
   const [selectedCareer, setSelectedCareer] = useState<(typeof careers)[0] | null>(null);
 
   if (selectedCareer) {
