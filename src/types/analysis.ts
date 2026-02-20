@@ -1,26 +1,34 @@
-const express = require("express");
-const multer = require("multer");
-const { analyzeCareerTask } = require("../controllers/analysisController");
+export interface TaskSubmission {
+  id: string;
+  title: string;
+  description: string;
+  userAnswer?: string;
+  completed: boolean;
+  timeSpent?: string;
+}
 
-const router = express.Router();
+export interface UserContext {
+  age?: string;
+  background?: string;
+  interests?: string;
+}
 
-// Memory storage — passes image buffer directly to Claude API
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (allowed.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed (jpeg, png, webp, gif)"));
-    }
-  },
-});
-
-// POST /api/analysis/career-task
-router.post("/career-task", upload.single("image"), analyzeCareerTask);
-
-module.exports = router;
-
+export interface AnalysisResult {
+  success: boolean;
+  analysis: {
+    fitScore: number;
+    fitLabel: string;
+    headline: string;
+    strengths: string[];
+    growthAreas: string[];
+    personalityInsights: string;
+    recommendation: string;
+    alternativeCareers: string[];
+    motivationalMessage: string;
+    parseError?: boolean;
+    raw?: string;
+  };
+  onetData?: any;
+  alternativeOnetData?: any;
+  error?: string;
+}

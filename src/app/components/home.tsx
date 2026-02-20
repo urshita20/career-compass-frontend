@@ -37,6 +37,9 @@ interface HomeProps {
   onViewSkillGap: () => void;
   toggleTheme: () => void;
   isDarkMode: boolean;
+  user?: { id: number; name: string; email: string } | null;
+  onLoginClick?: () => void;
+  onLogout?: () => void;
 }
 
 // Career icons for falling animation
@@ -67,15 +70,18 @@ interface FallingIcon {
   color: string;
 }
 
-export function Home({ 
-  onStartAssessment, 
+export function Home({
+  onStartAssessment,
   onExploreCareers,
   onViewMarketInsights,
   onViewInternships,
   onViewResources,
   onViewSkillGap,
   toggleTheme,
-  isDarkMode
+  isDarkMode,
+  user,
+  onLoginClick,
+  onLogout,
 }: HomeProps) {
   const [fallingIcons, setFallingIcons] = useState<FallingIcon[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -96,7 +102,7 @@ export function Home({
       "#52BE80", // Green
       "#AF7AC5", // Lavender
     ];
-    
+
     const icons: FallingIcon[] = [];
     for (let i = 0; i < 40; i++) {
       icons.push({
@@ -144,7 +150,7 @@ export function Home({
               <a href="#about" className="hover:text-gray-300 transition-colors">
                 About
               </a>
-              
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -154,13 +160,27 @@ export function Home({
                 {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
 
-              <Button
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-black dark:border-white dark:hover:bg-white dark:hover:text-black"
-                onClick={onStartAssessment}
-              >
-                Get Started
-              </Button>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-300">Hi, {user.name.split(" ")[0]} 👋</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                    onClick={onLogout}
+                  >
+                    Log out
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-black"
+                  onClick={onLoginClick}
+                >
+                  Login / Sign up
+                </Button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -350,7 +370,7 @@ export function Home({
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card 
+            <Card
               className="border hover:border-black dark:hover:border-white transition-all hover:shadow-lg cursor-pointer dark:bg-zinc-900 dark:border-zinc-800"
               onClick={onStartAssessment}
             >
@@ -363,7 +383,7 @@ export function Home({
               </CardHeader>
             </Card>
 
-            <Card 
+            <Card
               className="border hover:border-black dark:hover:border-white transition-all hover:shadow-lg cursor-pointer dark:bg-zinc-900 dark:border-zinc-800"
               onClick={onViewResources}
             >
@@ -376,7 +396,7 @@ export function Home({
               </CardHeader>
             </Card>
 
-            <Card 
+            <Card
               className="border hover:border-black dark:hover:border-white transition-all hover:shadow-lg cursor-pointer dark:bg-zinc-900 dark:border-zinc-800"
               onClick={onExploreCareers}
             >
@@ -389,7 +409,7 @@ export function Home({
               </CardHeader>
             </Card>
 
-            <Card 
+            <Card
               className="border hover:border-black dark:hover:border-white transition-all hover:shadow-lg cursor-pointer dark:bg-zinc-900 dark:border-zinc-800"
               onClick={onViewMarketInsights}
             >
@@ -402,7 +422,7 @@ export function Home({
               </CardHeader>
             </Card>
 
-            <Card 
+            <Card
               className="border hover:border-black dark:hover:border-white transition-all hover:shadow-lg cursor-pointer dark:bg-zinc-900 dark:border-zinc-800"
               onClick={onViewSkillGap}
             >
@@ -415,7 +435,7 @@ export function Home({
               </CardHeader>
             </Card>
 
-            <Card 
+            <Card
               className="border hover:border-black dark:hover:border-white transition-all hover:shadow-lg cursor-pointer dark:bg-zinc-900 dark:border-zinc-800"
               onClick={onViewInternships}
             >

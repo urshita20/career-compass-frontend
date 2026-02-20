@@ -17,7 +17,8 @@ const internships = [
     stipend: "₹25,000/mo",
     duration: "6 Months",
     tags: ["React", "Node.js", "Startup"],
-    posted: "2 days ago"
+    posted: "2 days ago",
+    applyUrl: "https://internshala.com/internships/web-development-internship/"
   },
   {
     id: 2,
@@ -27,7 +28,8 @@ const internships = [
     stipend: "₹15,000/mo",
     duration: "3 Months",
     tags: ["Instagram", "Content", "Creative"],
-    posted: "5 hours ago"
+    posted: "5 hours ago",
+    applyUrl: "https://internshala.com/internships/social-media-marketing-internship/"
   },
   {
     id: 3,
@@ -37,7 +39,8 @@ const internships = [
     stipend: "₹30,000/mo",
     duration: "6 Months",
     tags: ["SQL", "Python", "Finance"],
-    posted: "1 week ago"
+    posted: "1 week ago",
+    applyUrl: "https://www.naukri.com/data-analytics-internship-jobs"
   },
   {
     id: 4,
@@ -47,7 +50,30 @@ const internships = [
     stipend: "₹20,000/mo",
     duration: "4 Months",
     tags: ["Figma", "User Research"],
-    posted: "3 days ago"
+    posted: "3 days ago",
+    applyUrl: "https://internshala.com/internships/ui-ux-design-internship/"
+  },
+  {
+    id: 5,
+    role: "Machine Learning Intern",
+    company: "AI Labs India",
+    location: "Hyderabad (Hybrid)",
+    stipend: "₹35,000/mo",
+    duration: "6 Months",
+    tags: ["Python", "TensorFlow", "Research"],
+    posted: "Today",
+    applyUrl: "https://www.linkedin.com/jobs/machine-learning-intern-jobs/"
+  },
+  {
+    id: 6,
+    role: "Business Development Intern",
+    company: "StartupX",
+    location: "Delhi (Remote)",
+    stipend: "₹12,000/mo",
+    duration: "3 Months",
+    tags: ["Sales", "Strategy", "Startup"],
+    posted: "4 days ago",
+    applyUrl: "https://internshala.com/internships/business-development-internship/"
   }
 ];
 
@@ -72,8 +98,8 @@ export function InternshipHub({ onBack }: InternshipHubProps) {
         <div className="flex gap-4 mb-8 max-w-2xl mx-auto">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <Input 
-              placeholder="Search by role, company, or skill..." 
+            <Input
+              placeholder="Search by role, company, or skill..."
               className="pl-10 bg-white dark:bg-zinc-900 dark:border-zinc-700 h-12 text-lg"
             />
           </div>
@@ -94,7 +120,7 @@ export function InternshipHub({ onBack }: InternshipHubProps) {
                         {internship.posted}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-lg font-medium text-gray-700 dark:text-gray-300">
                       <Building className="h-5 w-5 text-gray-400" />
                       {internship.company}
@@ -117,7 +143,11 @@ export function InternshipHub({ onBack }: InternshipHubProps) {
                   </div>
 
                   <div className="flex flex-col items-end gap-3">
-                    <Button size="lg" className="w-full md:w-auto bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200">
+                    <Button
+                      size="lg"
+                      className="w-full md:w-auto bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                      onClick={(e) => { e.stopPropagation(); window.open(internship.applyUrl, "_blank", "noopener,noreferrer"); }}
+                    >
                       Apply Now 🚀
                     </Button>
                     <div className="flex gap-2">

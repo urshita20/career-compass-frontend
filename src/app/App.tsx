@@ -9,6 +9,7 @@ import { MarketInsights } from "@/app/components/market-insights";
 import { InternshipHub } from "@/app/components/internship-hub";
 import { ResourceLibrary } from "@/app/components/resource-library";
 import { SkillGapTool } from "@/app/components/skill-gap-tool";
+import { AuthModal } from "@/app/components/auth-modal";
 import { careerPaths, CareerPath } from "@/app/components/career-data";
 import { submitAssessment } from "@/app/components/api-service";
 
@@ -30,6 +31,14 @@ function App() {
   const [selectedLearningCareer, setSelectedLearningCareer] = useState<CareerPath | null>(null);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">("right");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [user, setUser] = useState<{ id: number; name: string; email: string } | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Rehydrate auth from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("cc_user");
+    if (stored) { try { setUser(JSON.parse(stored)); } catch { } }
+  }, []);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -176,6 +185,9 @@ function App() {
               onViewSkillGap={handleViewSkillGap}
               toggleTheme={toggleTheme}
               isDarkMode={theme === "dark"}
+              user={user}
+              onLoginClick={() => setShowAuthModal(true)}
+              onLogout={() => { setUser(null); localStorage.removeItem("cc_user"); localStorage.removeItem("cc_token"); }}
             />
           </motion.div>
         )}
@@ -309,6 +321,14 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={(u, _token) => { setUser(u); setShowAuthModal(false); }}
+        />
+      )}
     </div>
   );
 }
