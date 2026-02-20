@@ -5,8 +5,8 @@ import { RadioGroup, RadioGroupItem } from "@/app/components/ui/radio-group";
 import { Label } from "@/app/components/ui/label";
 import { Progress } from "@/app/components/ui/progress";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import TryCareerOut from "@/components/TryCareerOut";
-import type { CareerTask } from "@/types/analysis";
+import TryCareerOut from "../../components/TryCareerOut";
+import type { CareerTask } from "../../types/analysis";
 
 // ─── CAREER DATA ─────────────────────────────────────────────────────────────
 
