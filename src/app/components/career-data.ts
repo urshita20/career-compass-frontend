@@ -212,6 +212,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "12 weeks",
       level: "Beginner",
+      url: "https://www.edx.org/learn/computer-science/harvard-university-cs50-s-introduction-to-computer-science",
     },
     {
       id: "fullstack-open",
@@ -220,6 +221,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "12-15 weeks",
       level: "Intermediate",
+      url: "https://fullstackopen.com/en/",
     },
     {
       id: "algorithms-coursera",
@@ -228,6 +230,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "6 months",
       level: "Intermediate",
+      url: "https://www.coursera.org/specializations/algorithms",
     },
   ],
   "data-scientist": [
@@ -238,6 +241,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "8 weeks",
       level: "Beginner",
+      url: "https://www.coursera.org/professional-certificates/ibm-data-science",
     },
     {
       id: "ml-specialization",
@@ -246,6 +250,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "3 months",
       level: "Intermediate",
+      url: "https://www.coursera.org/specializations/machine-learning-introduction",
     },
     {
       id: "data-science-bootcamp",
@@ -254,6 +259,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Bootcamp",
       duration: "4 months",
       level: "Intermediate",
+      url: "https://www.datacamp.com/tracks/data-scientist-with-python",
     },
   ],
   "ux-designer": [
@@ -264,6 +270,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Certification",
       duration: "6 months",
       level: "Beginner",
+      url: "https://www.coursera.org/professional-certificates/google-ux-design",
     },
     {
       id: "interaction-design",
@@ -272,6 +279,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "5 months",
       level: "Intermediate",
+      url: "https://www.coursera.org/specializations/interaction-design",
     },
     {
       id: "figma-mastery",
@@ -280,6 +288,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "10 hours",
       level: "Beginner",
+      url: "https://www.udemy.com/course/figma-ux-ui-design-user-experience-tutorial-course/",
     },
   ],
   "product-manager": [
@@ -290,6 +299,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "8 weeks",
       level: "Beginner",
+      url: "https://productschool.com/product-management-certification/",
     },
     {
       id: "digital-product-management",
@@ -298,6 +308,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "4 months",
       level: "Intermediate",
+      url: "https://www.coursera.org/specializations/product-management",
     },
     {
       id: "agile-product-management",
@@ -306,6 +317,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Certification",
       duration: "2 weeks",
       level: "Intermediate",
+      url: "https://www.scrumalliance.org/get-certified",
     },
   ],
   "digital-marketer": [
@@ -316,6 +328,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Certification",
       duration: "6 months",
       level: "Beginner",
+      url: "https://www.coursera.org/professional-certificates/google-digital-marketing-ecommerce",
     },
     {
       id: "seo-training",
@@ -324,6 +337,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Course",
       duration: "4 weeks",
       level: "Intermediate",
+      url: "https://moz.com/beginners-guide-to-seo",
     },
     {
       id: "content-marketing",
@@ -332,6 +346,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
       type: "Certification",
       duration: "3 hours",
       level: "Beginner",
+      url: "https://academy.hubspot.com/courses/content-marketing",
     },
   ],
 };
@@ -339,7 +354,7 @@ export const learningResources: { [key: string]: LearningResource[] } = {
 export function generateSkillGaps(careerPath: CareerPath): SkillGap[] {
   // Mock skill gaps - in a real app, this would compare user's current skills
   const skillsToAnalyze = careerPath.requiredSkills.slice(0, 5);
-  
+
   return skillsToAnalyze.map((skill, index) => ({
     skill,
     currentLevel: Math.floor(Math.random() * 5) + 1,

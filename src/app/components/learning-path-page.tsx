@@ -6,191 +6,78 @@ import { motion } from "motion/react";
 import {
   ArrowLeft,
   BookOpen,
-  CheckCircle2,
   Clock,
+  ExternalLink,
   Play,
   Star,
   TrendingUp,
   Trophy,
   Users,
-  Zap,
 } from "lucide-react";
 import { CareerPath, learningResources } from "./career-data";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import TryCareerOut from "../../components/TryCareerOut";
+import type { CareerTask } from "../../types/analysis";
 
 interface LearningPathPageProps {
   career: CareerPath;
   onBack: () => void;
 }
 
-// TASKS - Now using MULTIPLE ID formats to catch all careers!
-const getAllCareerTasks = () => {
-  const baseTasks = {
-    "software-engineer": [
-      { id: "1", task: "Watch a 'Day in the Life of a Software Engineer' video", time: "15 min", icon: "🎥" },
-      { id: "2", task: "Try coding a simple calculator using any language", time: "30 min", icon: "💻" },
-      { id: "3", task: "Solve a beginner coding challenge on LeetCode", time: "20 min", icon: "🧩" },
-      { id: "4", task: "Create your first GitHub repository", time: "25 min", icon: "🔄" },
-    ],
-    "data-scientist": [
-      { id: "1", task: "Explore a dataset on Kaggle and analyze statistics", time: "30 min", icon: "📊" },
-      { id: "2", task: "Watch a video on 'What is Machine Learning?'", time: "15 min", icon: "🎥" },
-      { id: "3", task: "Create a simple chart using Excel or Google Sheets", time: "20 min", icon: "📈" },
-      { id: "4", task: "Try a Python basics tutorial", time: "40 min", icon: "🐍" },
-    ],
-    "ux-designer": [
-      { id: "1", task: "Sketch 5 different app icon designs on paper", time: "20 min", icon: "✏️" },
-      { id: "2", task: "Redesign a button or form you use daily", time: "15 min", icon: "🎨" },
-      { id: "3", task: "Watch a UX design case study video", time: "20 min", icon: "🎥" },
-      { id: "4", task: "Create a free Figma account and explore", time: "25 min", icon: "🖼️" },
-    ],
-    "product-manager": [
-      { id: "1", task: "Write a one-page feature proposal for an app", time: "30 min", icon: "📝" },
-      { id: "2", task: "Prioritize 5 features for a hypothetical product", time: "20 min", icon: "🎯" },
-      { id: "3", task: "Watch a 'Day in the Life of a PM' video", time: "15 min", icon: "🎥" },
-      { id: "4", task: "Read about Agile/Scrum basics", time: "25 min", icon: "📚" },
-    ],
-    "digital-marketer": [
-      { id: "1", task: "Create 3 social media captions for a brand", time: "20 min", icon: "📱" },
-      { id: "2", task: "Analyze why a viral post went viral", time: "15 min", icon: "🔍" },
-      { id: "3", task: "Design a simple poster using Canva", time: "30 min", icon: "🎨" },
-      { id: "4", task: "Watch a video on SEO basics", time: "20 min", icon: "🎥" },
-    ],
-    "entrepreneur": [
-      { id: "1", task: "Write down 10 business ideas", time: "20 min", icon: "💡" },
-      { id: "2", task: "Research a successful startup story", time: "25 min", icon: "📚" },
-      { id: "3", task: "Create a simple business plan outline", time: "30 min", icon: "📝" },
-      { id: "4", task: "Watch a video about startup failures and lessons", time: "20 min", icon: "🎥" },
-    ],
-    "content-creator": [
-      { id: "1", task: "Record a 30-second video about your passion", time: "20 min", icon: "🎬" },
-      { id: "2", task: "Write a blog post (300-500 words)", time: "40 min", icon: "✍️" },
-      { id: "3", task: "Edit a photo using free tools", time: "15 min", icon: "📸" },
-      { id: "4", task: "Brainstorm 10 content ideas", time: "20 min", icon: "💡" },
-    ],
-    "cybersecurity": [
-      { id: "1", task: "Learn about common cybersecurity threats", time: "25 min", icon: "🛡️" },
-      { id: "2", task: "Try a beginner CTF challenge", time: "40 min", icon: "🚩" },
-      { id: "3", task: "Watch a documentary on cyber attacks", time: "30 min", icon: "🎥" },
-      { id: "4", task: "Set up two-factor authentication", time: "15 min", icon: "🔐" },
-    ],
-    "teacher": [
-      { id: "1", task: "Teach a 10-minute lesson to a friend", time: "20 min", icon: "👨‍🏫" },
-      { id: "2", task: "Create a fun quiz with 10 questions", time: "25 min", icon: "📝" },
-      { id: "3", task: "Watch a TED talk on teaching methods", time: "20 min", icon: "🎥" },
-      { id: "4", task: "Design a classroom activity or game", time: "30 min", icon: "🎮" },
-    ],
-    "doctor": [
-      { id: "1", task: "Read about a medical specialty", time: "25 min", icon: "📚" },
-      { id: "2", task: "Watch a surgery documentary", time: "40 min", icon: "🎥" },
-      { id: "3", task: "Learn basic first aid techniques", time: "30 min", icon: "🏥" },
-      { id: "4", task: "Research medical school requirements", time: "20 min", icon: "📝" },
-    ]
-  };
-
-  // Create ALL possible ID variations for EVERY career
-  const expandedTasks: { [key: string]: any[] } = {};
-  
-  Object.keys(baseTasks).forEach(baseKey => {
-    const tasks = baseTasks[baseKey as keyof typeof baseTasks];
-    
-    // Add original key
-    expandedTasks[baseKey] = tasks;
-    
-    // Add title-case variations
-    const titleCase = baseKey.split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-    expandedTasks[titleCase] = tasks;
-    
-    // Add variations without hyphens
-    expandedTasks[baseKey.replace(/-/g, '')] = tasks;
-    expandedTasks[titleCase.replace(/\s/g, '')] = tasks;
-    
-    // Add lowercase no-space
-    expandedTasks[baseKey.replace(/-/g, '').toLowerCase()] = tasks;
-  });
-  
-  // Add specific backend career names
-  expandedTasks["Software Engineer"] = baseTasks["software-engineer"];
-  expandedTasks["Data Analyst"] = baseTasks["data-scientist"];
-  expandedTasks["Data Scientist"] = baseTasks["data-scientist"];
-  expandedTasks["AI Engineer"] = baseTasks["software-engineer"];
-  expandedTasks["UI/UX Designer"] = baseTasks["ux-designer"];
-  expandedTasks["UX/UI Designer"] = baseTasks["ux-designer"];
-  expandedTasks["Graphic Designer"] = baseTasks["ux-designer"];
-  expandedTasks["Product Manager"] = baseTasks["product-manager"];
-  expandedTasks["Digital Marketing Specialist"] = baseTasks["digital-marketer"];
-  expandedTasks["Marketing Manager"] = baseTasks["digital-marketer"];
-  expandedTasks["Entrepreneur"] = baseTasks["entrepreneur"];
-  expandedTasks["Business Analyst"] = baseTasks["entrepreneur"];
-  expandedTasks["Financial Analyst"] = baseTasks["entrepreneur"];
-  expandedTasks["Content Writer"] = baseTasks["content-creator"];
-  expandedTasks["Journalist"] = baseTasks["content-creator"];
-  expandedTasks["Cybersecurity Specialist"] = baseTasks["cybersecurity"];
-  expandedTasks["Cybersecurity Analyst"] = baseTasks["cybersecurity"];
-  expandedTasks["Education Specialist/Teacher"] = baseTasks["teacher"];
-  expandedTasks["Teacher"] = baseTasks["teacher"];
-  expandedTasks["Doctor"] = baseTasks["doctor"];
-  expandedTasks["Healthcare Administrator"] = baseTasks["doctor"];
-  
-  return expandedTasks;
+// ── Per-career task definitions for TryCareerOut ──────────────────────────────
+const careerTaskMap: { [key: string]: CareerTask[] } = {
+  "software-engineer": [
+    { id: "1", title: "Code a simple calculator", description: "Build a calculator using HTML, CSS, and JavaScript. Try to make it work for +, -, ×, ÷.", duration: "30 min", icon: "💻" },
+    { id: "2", title: "Solve a LeetCode beginner challenge", description: "Pick any Easy problem on LeetCode and try to solve it in any language you know.", duration: "20 min", icon: "🧩" },
+    { id: "3", title: "Create your first GitHub repo", description: "Sign up on GitHub, create a new repository, and commit your calculator code from task 1.", duration: "25 min", icon: "🔄" },
+    { id: "4", title: "Watch a 'Day in the Life' video", description: "Search YouTube for 'Day in the Life Software Engineer' — watch one and note 3 things that surprised you.", duration: "15 min", icon: "🎥", requiresImage: false },
+  ],
+  "data-scientist": [
+    { id: "1", title: "Explore a Kaggle dataset", description: "Open any beginner dataset on kaggle.com. Look at its columns, write down 3 questions you could answer with it.", duration: "30 min", icon: "📊" },
+    { id: "2", title: "Make a chart in Google Sheets", description: "Take any dataset (even just class marks) and create a bar chart or pie chart. Screenshot your result.", duration: "20 min", icon: "📈", requiresImage: true, imagePrompt: "Screenshot of your chart" },
+    { id: "3", title: "Python basics tutorial", description: "Complete the first 3 lessons of a Python tutorial on Codecademy or W3Schools.", duration: "40 min", icon: "🐍" },
+    { id: "4", title: "What is ML? Video", description: "Watch 'Machine Learning for Everybody' intro (first 15 min) on YouTube and summarise it in 2-3 sentences.", duration: "15 min", icon: "🎥" },
+  ],
+  "ux-designer": [
+    { id: "1", title: "Sketch 5 app icon concepts", description: "Draw 5 different ideas for an app icon (it can be for anything). No digital tools needed — pen and paper is fine!", duration: "20 min", icon: "✏️", requiresImage: true, imagePrompt: "Photo of your sketches" },
+    { id: "2", title: "Create a free Figma account", description: "Go to figma.com, create an account, and explore the interface. Try dragging a rectangle and adding text.", duration: "25 min", icon: "🖼️" },
+    { id: "3", title: "Redesign a bad UI", description: "Find an app or website with a confusing button/form. Sketch or describe how you would improve it.", duration: "20 min", icon: "🎨" },
+    { id: "4", title: "Watch a UX case study", description: "Search 'UX case study redesign' on YouTube and watch one full video. Note what process they followed.", duration: "25 min", icon: "🎥" },
+  ],
+  "product-manager": [
+    { id: "1", title: "Write a feature proposal", description: "Pick any app you use daily and write a 1-page proposal for one feature you wish it had. Include: the problem, the solution, and who benefits.", duration: "30 min", icon: "📝" },
+    { id: "2", title: "Prioritize 5 features", description: "List 5 features for a hypothetical food delivery app and rank them by priority. Explain your reasoning briefly.", duration: "20 min", icon: "🎯" },
+    { id: "3", title: "Learn Agile basics", description: "Read the Wikipedia summary of Agile methodology. Write 3 bullet points explaining it to a friend.", duration: "25 min", icon: "📚" },
+    { id: "4", title: "Watch a PM interview", description: "Search 'Product Manager mock interview' on YouTube and watch one. What surprised you about the questions?", duration: "20 min", icon: "🎥" },
+  ],
+  "digital-marketer": [
+    { id: "1", title: "Write 3 social media captions", description: "Choose a brand you like and write 3 different Instagram caption ideas for the same product. Make them distinct in tone.", duration: "20 min", icon: "📱" },
+    { id: "2", title: "Analyze a viral post", description: "Find a post that went viral recently. Write a short analysis: why did it spread? What emotions did it trigger?", duration: "15 min", icon: "🔍" },
+    { id: "3", title: "Design a Canva poster", description: "Use Canva (free) to design a simple promotional poster for an imaginary event. Screenshot the result.", duration: "30 min", icon: "🎨", requiresImage: true, imagePrompt: "Screenshot of your Canva poster" },
+    { id: "4", title: "Learn SEO basics", description: "Read Moz's Beginner's Guide to SEO introduction. List 3 things you didn't know about how Google ranks pages.", duration: "20 min", icon: "🎥" },
+  ],
 };
+
+// Fallback tasks for any career not in the map
+function getCareerTasks(career: CareerPath): CareerTask[] {
+  // Try direct ID
+  if (careerTaskMap[career.id]) return careerTaskMap[career.id];
+  // Try normalised title
+  const key = career.title.toLowerCase().replace(/[\s/]+/g, "-");
+  if (careerTaskMap[key]) return careerTaskMap[key];
+  // Generic fallback
+  return [
+    { id: "1", title: `Research what a ${career.title} does daily`, description: `Search 'day in the life ${career.title}' on YouTube. Watch one video and write down 3 things that surprised you.`, duration: "20 min", icon: "🔍" },
+    { id: "2", title: "Try the core skill", description: `Pick one skill from the list below and find a free beginner exercise for it online. Spend 30 minutes trying it out.`, duration: "30 min", icon: "💡" },
+    { id: "3", title: "Read a professional's story", description: `Search LinkedIn or Medium for '${career.title} career journey'. Read one person's story and note what path they took.`, duration: "25 min", icon: "📚" },
+    { id: "4", title: "Connect on LinkedIn", description: `Search for 3 people with the title '${career.title}' on LinkedIn. Look at their profiles and see what education/skills they have.`, duration: "15 min", icon: "💼" },
+  ];
+}
 
 export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
   const resources = learningResources[career.id] || [];
-  const allCareerTasks = getAllCareerTasks();
-  
-  // Try MULTIPLE ways to find tasks
-  const findTasks = () => {
-    // Try direct ID match
-    if (allCareerTasks[career.id]) return allCareerTasks[career.id];
-    
-    // Try title match
-    if (allCareerTasks[career.title]) return allCareerTasks[career.title];
-    
-    // Try normalized versions
-    const normalized = career.title.toLowerCase().replace(/\s+/g, '-');
-    if (allCareerTasks[normalized]) return allCareerTasks[normalized];
-    
-    // Try without special characters
-    const simplified = career.title.replace(/[\/\s-]/g, '').toLowerCase();
-    if (allCareerTasks[simplified]) return allCareerTasks[simplified];
-    
-    // Default generic tasks for ANY career
-    return [
-      { id: "1", task: `Research what a ${career.title} does daily`, time: "20 min", icon: "🔍" },
-      { id: "2", task: `Watch a 'Day in the Life' video about this career`, time: "15 min", icon: "🎥" },
-      { id: "3", task: `Read an article or blog post by a ${career.title}`, time: "25 min", icon: "📚" },
-      { id: "4", task: `Connect with someone in this field on LinkedIn`, time: "15 min", icon: "💼" },
-      { id: "5", task: `Create a list of skills you need to develop`, time: "20 min", icon: "📝" },
-    ];
-  };
-  
-  const tasks = findTasks();
-  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
-
-  // Debug logging (remove after testing)
-  useEffect(() => {
-    console.log("🎯 Career ID:", career.id);
-    console.log("🎯 Career Title:", career.title);
-    console.log("🎯 Tasks found:", tasks.length);
-    console.log("🎯 Available task keys:", Object.keys(allCareerTasks).slice(0, 10));
-  }, [career]);
-
-  const toggleTask = (taskId: string) => {
-    setCompletedTasks(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(taskId)) {
-        newSet.delete(taskId);
-      } else {
-        newSet.add(taskId);
-      }
-      return newSet;
-    });
-  };
-
-  const completionPercentage = tasks.length > 0 ? (completedTasks.size / tasks.length) * 100 : 0;
+  const tasks = getCareerTasks(career);
+  const [openPreview, setOpenPreview] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-zinc-950 dark:to-orange-950 transition-colors duration-300">
@@ -225,9 +112,7 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-3xl mb-1">📚</div>
-                <div className="text-sm text-purple-100">
-                  {resources.length} Courses
-                </div>
+                <div className="text-sm text-purple-100">{resources.length} Courses</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl mb-1">⏱️</div>
@@ -245,145 +130,14 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
           </div>
         </motion.div>
 
-        {/* TRY THIS CAREER OUT - ALWAYS SHOWS NOW! */}
+        {/* ── TRY THIS CAREER OUT (full AI-powered version) ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="mb-8"
         >
-          <Card className="border-2 shadow-xl bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 dark:border-orange-800">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-3xl flex items-center gap-2 dark:text-white">
-                    <Zap className="h-8 w-8 text-orange-500" />
-                    Try This Career Out! ⚡
-                  </CardTitle>
-                  <CardDescription className="text-lg mt-2 dark:text-gray-300">
-                    Get a real taste of what it's like to be a {career.title}. Complete these beginner-friendly tasks!
-                  </CardDescription>
-                </div>
-                <div className="text-right">
-                  <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
-                    {completedTasks.size}/{tasks.length}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
-                </div>
-              </div>
-              <Progress value={completionPercentage} className="h-3 mt-4 bg-orange-200 dark:bg-orange-900/50" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {tasks.map((task, index) => {
-                const isCompleted = completedTasks.has(task.id);
-                return (
-                  <motion.div
-                    key={task.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 * index }}
-                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                      isCompleted
-                        ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700'
-                        : 'bg-white border-orange-200 hover:border-orange-400 dark:bg-zinc-900 dark:border-orange-800 dark:hover:border-orange-600'
-                    }`}
-                    onClick={() => toggleTask(task.id)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0">
-                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isCompleted
-                            ? 'bg-green-500 border-green-500'
-                            : 'border-orange-300 dark:border-orange-700'
-                        }`}>
-                          {isCompleted ? (
-                            <CheckCircle2 className="h-5 w-5 text-white" />
-                          ) : (
-                            <div className="w-3 h-3 rounded-full bg-orange-200 dark:bg-orange-800" />
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-2xl">{task.icon}</span>
-                          <h3 className={`text-lg font-semibold ${
-                            isCompleted
-                              ? 'line-through text-gray-500 dark:text-gray-500'
-                              : 'text-gray-800 dark:text-white'
-                          }`}>
-                            {task.task}
-                          </h3>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <Clock className="h-4 w-4" />
-                          <span>{task.time}</span>
-                        </div>
-                      </div>
-
-                      <Badge variant={isCompleted ? "default" : "outline"} className={
-                        isCompleted
-                          ? "bg-green-500 text-white"
-                          : "border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-400"
-                      }>
-                        {isCompleted ? "Done! ✓" : "Try it!"}
-                      </Badge>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Progress Tracker */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="mb-8 border-2 shadow-lg dark:bg-zinc-900 dark:border-zinc-800">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl dark:text-white">Your Progress</CardTitle>
-                  <CardDescription className="dark:text-gray-400">Keep going! You're doing amazing! 🌟</CardDescription>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl dark:text-white font-bold">
-                    {Math.round(completionPercentage)}%
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Complete</div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Progress value={completionPercentage} className="h-3 mb-4 dark:bg-zinc-800" />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
-                  <Trophy className="h-8 w-8 text-yellow-500" />
-                  <div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Tasks Done</div>
-                    <div className="font-semibold text-lg dark:text-white">{completedTasks.size} / {tasks.length}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
-                  <Star className="h-8 w-8 text-purple-500" />
-                  <div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Skills to Learn</div>
-                    <div className="font-semibold text-lg dark:text-white">{career.requiredSkills.length}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
-                  <Clock className="h-8 w-8 text-blue-500" />
-                  <div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Est. Time</div>
-                    <div className="font-semibold text-lg dark:text-white">{tasks.length * 20} mins</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <TryCareerOut careerTitle={career.title} tasks={tasks} />
         </motion.div>
 
         {/* Learning Modules */}
@@ -440,25 +194,71 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
                             </div>
                           </div>
 
-                          <div className="flex gap-3">
-                            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
-                              <Play className="mr-2 h-4 w-4" />
-                              Start Learning
-                            </Button>
-                            <Button variant="outline" className="dark:text-white dark:border-gray-600 dark:hover:bg-zinc-800">
-                              <BookOpen className="mr-2 h-4 w-4" />
-                              Preview
-                            </Button>
-                          </div>
-                        </div>
+                          <div className="flex gap-3 flex-wrap">
+                            {/* Start Learning — opens URL */}
+                            {resource.url ? (
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+                                  <Play className="mr-2 h-4 w-4" />
+                                  Start Learning
+                                  <ExternalLink className="ml-2 h-3 w-3" />
+                                </Button>
+                              </a>
+                            ) : (
+                              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white" disabled>
+                                <Play className="mr-2 h-4 w-4" />
+                                Start Learning
+                              </Button>
+                            )}
 
-                        <div className="flex-shrink-0 hidden md:block">
-                          <div className="text-center">
-                            <div className="w-12 h-12 rounded-full border-4 border-gray-200 dark:border-zinc-700 flex items-center justify-center text-gray-300 dark:text-zinc-600 mb-2">
-                              <CheckCircle2 className="h-6 w-6" />
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Not Started</div>
+                            {/* Preview — toggles an inline info panel */}
+                            <Button
+                              variant="outline"
+                              className="dark:text-white dark:border-gray-600 dark:hover:bg-zinc-800"
+                              onClick={() =>
+                                setOpenPreview(
+                                  openPreview === resource.id ? null : resource.id
+                                )
+                              }
+                            >
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              {openPreview === resource.id ? "Hide Preview" : "Preview"}
+                            </Button>
                           </div>
+
+                          {/* Inline preview panel */}
+                          {openPreview === resource.id && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              className="mt-4 p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800"
+                            >
+                              <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                                <strong>{resource.title}</strong> by {resource.provider}
+                              </p>
+                              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+                                <li>Level: {resource.level}</li>
+                                <li>Duration: {resource.duration}</li>
+                                <li>Type: {resource.type}</li>
+                                {resource.url && (
+                                  <li>
+                                    <a
+                                      href={resource.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-purple-600 dark:text-purple-400 underline"
+                                    >
+                                      Open course →
+                                    </a>
+                                  </li>
+                                )}
+                              </ul>
+                            </motion.div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -467,17 +267,78 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
               ))}
             </div>
           ) : (
-            <Card className="border-2 dark:bg-zinc-900 dark:border-zinc-800">
-              <CardContent className="py-12 text-center">
-                <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
-                  We're curating awesome resources for this career! 🎉
-                </p>
-                <p className="text-gray-500 dark:text-gray-500">Check back soon for personalized courses.</p>
-              </CardContent>
-            </Card>
+            /* Generic links when no curated resources for this career */
+            <div className="space-y-4">
+              {[
+                { title: "Coursera", desc: "University-backed courses & certificates", url: "https://www.coursera.org", icon: "🎓" },
+                { title: "edX", desc: "Free courses from MIT, Harvard & more", url: "https://www.edx.org", icon: "📘" },
+                { title: "YouTube Learning", desc: "Free tutorials from world-class creators", url: `https://www.youtube.com/results?search_query=${encodeURIComponent(career.title + " tutorial beginner")}`, icon: "▶️" },
+                { title: "Udemy", desc: "Affordable hands-on courses", url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(career.title)}`, icon: "🏫" },
+              ].map((link, i) => (
+                <motion.div
+                  key={link.title}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * i }}
+                >
+                  <Card className="border-2 hover:border-purple-300 hover:shadow-xl transition-all dark:bg-zinc-900 dark:border-zinc-800">
+                    <CardContent className="p-5 flex items-center gap-5">
+                      <div className="text-4xl">{link.icon}</div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg dark:text-white">{link.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{link.desc}</p>
+                      </div>
+                      <a href={link.url} target="_blank" rel="noopener noreferrer">
+                        <Button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                          Open <ExternalLink className="ml-2 h-4 w-4" />
+                        </Button>
+                      </a>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
           )}
         </div>
+
+        {/* Progress Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="mb-8 border-2 shadow-lg dark:bg-zinc-900 dark:border-zinc-800">
+            <CardHeader>
+              <CardTitle className="text-2xl dark:text-white">Your Journey Stats</CardTitle>
+              <CardDescription className="dark:text-gray-400">Track your path to becoming a {career.title}!</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                  <Trophy className="h-8 w-8 text-yellow-500" />
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Courses Available</div>
+                    <div className="font-semibold text-lg dark:text-white">{resources.length > 0 ? resources.length : "4+"}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                  <Star className="h-8 w-8 text-purple-500" />
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Skills to Learn</div>
+                    <div className="font-semibold text-lg dark:text-white">{career.requiredSkills.length}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                  <Clock className="h-8 w-8 text-blue-500" />
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Time to Career Ready</div>
+                    <div className="font-semibold text-lg dark:text-white">6-12 months</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Skills to Unlock */}
         <motion.div
@@ -527,12 +388,24 @@ export function LearningPathPage({ career, onBack }: LearningPathPageProps) {
                 Let's do this! 💪
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg rounded-full shadow-lg"
-                >
-                  Begin First Course 🚀
-                </Button>
+                {resources[0]?.url ? (
+                  <a href={resources[0].url} target="_blank" rel="noopener noreferrer">
+                    <Button
+                      size="lg"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg rounded-full shadow-lg"
+                    >
+                      Begin First Course 🚀 <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg rounded-full shadow-lg"
+                    onClick={() => window.open("https://www.coursera.org", "_blank")}
+                  >
+                    Begin First Course 🚀
+                  </Button>
+                )}
                 <Button
                   size="lg"
                   variant="outline"

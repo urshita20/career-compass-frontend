@@ -1,3 +1,13 @@
+export interface CareerTask {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  icon: string;
+  requiresImage?: boolean;
+  imagePrompt?: string;
+}
+
 export interface TaskSubmission {
   id: string;
   title: string;
@@ -6,6 +16,7 @@ export interface TaskSubmission {
   completed: boolean;
   timeSpent?: string;
 }
+
 
 export interface UserContext {
   age?: string;
