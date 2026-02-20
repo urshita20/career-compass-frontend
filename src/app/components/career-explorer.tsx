@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/app/components/ui/radio-group";
@@ -7,6 +7,181 @@ import { Progress } from "@/app/components/ui/progress";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import TryCareerOut from "../../components/TryCareerOut";
 import type { CareerTask } from "../../types/analysis";
+
+const BACKEND = "https://career-compass-backend-1-1fnz.onrender.com";
+
+// ─── DB CAREER TYPE ───────────────────────────────────────────────────────────
+interface DbCareer {
+  onet_code: string;
+  title: string;
+  description: string;
+  skills: string[] | string;
+  bright_outlook: boolean | number;
+}
+
+// ─── DB CAREER CARD ───────────────────────────────────────────────────────────
+function DbCareerCard({ career }: { career: DbCareer }) {
+  const [expanded, setExpanded] = useState(false);
+  const skills: string[] = Array.isArray(career.skills)
+    ? career.skills
+    : typeof career.skills === "string"
+      ? JSON.parse(career.skills || "[]")
+      : [];
+
+  return (
+    <div
+      className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:shadow-md hover:border-orange-200 transition-all cursor-pointer"
+      onClick={() => setExpanded(!expanded)}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 className="font-semibold text-gray-800 text-sm">{career.title}</h3>
+            {career.bright_outlook ? (
+              <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">⭐ Bright Outlook</span>
+            ) : null}
+          </div>
+          <p className={`text-xs text-gray-500 leading-relaxed ${expanded ? "" : "line-clamp-2"}`}>
+            {career.description}
+          </p>
+        </div>
+        <span className="text-gray-300 text-lg flex-shrink-0">{expanded ? "▲" : "▼"}</span>
+      </div>
+      {expanded && skills.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-gray-50">
+          <p className="text-xs font-medium text-gray-400 mb-2">Key Skills</p>
+          <div className="flex flex-wrap gap-1.5">
+            {skills.slice(0, 8).map((skill) => (
+              <span key={skill} className="text-xs px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── BROWSE ALL CAREERS SECTION ───────────────────────────────────────────────
+function BrowseAllCareers() {
+  const [careers, setCareers] = useState<DbCareer[]>([]);
+  const [displayed, setDisplayed] = useState<DbCareer[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showBrightOnly, setShowBrightOnly] = useState(false);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 30;
+
+  useEffect(() => {
+    fetch(`${BACKEND}/api/careers/all?limit=1100`)
+      .then((r) => r.json())
+      .then((data) => {
+        setCareers(data.careers || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load careers from the database.");
+        setLoading(false);
+      });
+  }, []);
+
+  const filter = useCallback(() => {
+    const q = search.toLowerCase().trim();
+    return careers.filter((c) => {
+      if (showBrightOnly && !c.bright_outlook) return false;
+      if (!q) return true;
+      const skills: string[] = Array.isArray(c.skills)
+        ? c.skills
+        : typeof c.skills === "string"
+          ? JSON.parse(c.skills || "[]")
+          : [];
+      return (
+        c.title.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) ||
+        skills.some((s) => s.toLowerCase().includes(q))
+      );
+    });
+  }, [careers, search, showBrightOnly]);
+
+  useEffect(() => {
+    setPage(0);
+    setDisplayed(filter().slice(0, PAGE_SIZE));
+  }, [filter]);
+
+  const loadMore = () => {
+    const next = page + 1;
+    setPage(next);
+    setDisplayed(filter().slice(0, (next + 1) * PAGE_SIZE));
+  };
+
+  const total = filter().length;
+
+  return (
+    <div className="mb-14">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-black dark:text-white">Browse All Careers</h2>
+          <p className="text-sm text-gray-400">
+            {loading ? "Loading…" : `${total.toLocaleString()} careers from O*NET database`}
+          </p>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={showBrightOnly}
+            onChange={(e) => setShowBrightOnly(e.target.checked)}
+            className="accent-orange-500"
+          />
+          ⭐ Bright Outlook only
+        </label>
+      </div>
+
+      {/* Search bar */}
+      <input
+        type="text"
+        placeholder="Search by career, skill, or keyword…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full mb-5 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+      />
+
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-16 text-gray-400">
+          <svg className="animate-spin w-6 h-6 mr-3 text-orange-400" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
+            <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+          Loading careers from database…
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {displayed.map((c) => (
+              <DbCareerCard key={c.onet_code} career={c} />
+            ))}
+          </div>
+          {displayed.length === 0 && (
+            <p className="text-center text-gray-400 py-10">No careers match your search.</p>
+          )}
+          {displayed.length < total && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={loadMore}
+                className="px-6 py-2.5 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 text-sm font-medium hover:bg-orange-100 transition-colors"
+              >
+                Load more ({total - displayed.length} remaining)
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 // ─── CAREER DATA ─────────────────────────────────────────────────────────────
 
@@ -341,6 +516,14 @@ export function CareerExplorer({ onBack, onStartLearning }: { onBack: () => void
           <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
             Pick a career, try real beginner tasks, and get a personalised AI analysis of your fit.
           </p>
+        </div>
+
+        <BrowseAllCareers />
+
+        {/* ── Try It Out: 6 curated careers with interactive tasks ── */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-black dark:text-white mb-2">⚡ Try a Career Out</h2>
+          <p className="text-sm text-gray-400">Pick one of these 6 curated careers, complete beginner tasks, and get a personalised AI analysis.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
