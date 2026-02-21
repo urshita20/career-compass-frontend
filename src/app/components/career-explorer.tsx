@@ -93,7 +93,7 @@ function emojiForCareer(title: string): string {
   return "💼";
 }
 
-function DbCareerCard({ career, onTryOut }: { career: DbCareer; onTryOut: (title: string, tasks: any[]) => void }) {
+function DbCareerCard({ career, onTryOut }: { career: DbCareer; onTryOut: (title: string, tasks: any[], career: DbCareer, skills: string[]) => void }) {
   const skills: string[] = Array.isArray(career.skills)
     ? career.skills
     : typeof career.skills === "string"
@@ -135,7 +135,7 @@ function DbCareerCard({ career, onTryOut }: { career: DbCareer; onTryOut: (title
         <Button
           variant="outline"
           className="w-full border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-orange-900/20"
-          onClick={() => onTryOut(career.title, generateTasksForCareer(career.title, skills))}
+          onClick={() => onTryOut(career.title, generateTasksForCareer(career.title, skills), career, skills)}
         >
           ⚡ Try This Career Out
         </Button>
@@ -146,7 +146,7 @@ function DbCareerCard({ career, onTryOut }: { career: DbCareer; onTryOut: (title
 
 // ─── BROWSE ALL CAREERS SECTION ───────────────────────────────────────────────
 
-function BrowseAllCareers({ onTryOut }: { onTryOut: (title: string, tasks: any[]) => void }) {
+function BrowseAllCareers({ onTryOut }: { onTryOut: (title: string, tasks: any[], career: DbCareer, skills: string[]) => void }) {
   const [careers, setCareers] = useState<DbCareer[]>([]);
   const [displayed, setDisplayed] = useState<DbCareer[]>([]);
   const [search, setSearch] = useState("");
@@ -560,26 +560,136 @@ function CareerCard({
 // ─── MAIN CAREER EXPLORER ────────────────────────────────────────────────────
 
 export function CareerExplorer({ onBack, onStartLearning }: { onBack: () => void; onStartLearning?: (career: any) => void }) {
+  // ── State for db career full detail page ──
   const [selectedCareer, setSelectedCareer] = useState<(typeof careers)[0] | null>(null);
-  const [dbCareerTryOut, setDbCareerTryOut] = useState<{ title: string; tasks: any[] } | null>(null);
+  const [dbCareerDetail, setDbCareerDetail] = useState<{
+    career: DbCareer;
+    skills: string[];
+    tasks: any[];
+  } | null>(null);
 
-  // DB career Try It Out view
-  if (dbCareerTryOut) {
+  // DB career full detail view
+  if (dbCareerDetail) {
+    const { career, skills, tasks } = dbCareerDetail;
+    const emoji = emojiForCareer(career.title);
+    const encoded = encodeURIComponent(career.title + " beginner course");
+    const learningLinks = [
+      { name: "Coursera", desc: "University-backed courses & certificates", icon: "🎓", url: `https://www.coursera.org/search?query=${encoded}` },
+      { name: "edX", desc: "Free courses from MIT, Harvard & more", icon: "📘", url: `https://www.edx.org/search?q=${encoded}` },
+      { name: "YouTube", desc: "Free tutorials from world-class creators", icon: "▶️", url: `https://www.youtube.com/results?search_query=${encoded}` },
+      { name: "Udemy", desc: "Affordable hands-on courses", icon: "🏫", url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(career.title)}` },
+      { name: "LinkedIn Learning", desc: "Professional skills from industry experts", icon: "💼", url: `https://www.linkedin.com/learning/search?keywords=${encoded}` },
+      { name: "Khan Academy", desc: "Free foundational learning", icon: "🦡", url: `https://www.khanacademy.org/search?referer=%2F&page_search_query=${encoded}` },
+    ];
+
     return (
-      <div className="min-h-screen bg-amber-50/30 dark:bg-zinc-950 px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-zinc-950 dark:to-orange-950">
+        <div className="max-w-6xl mx-auto px-6 py-8">
           <Button
-            onClick={() => setDbCareerTryOut(null)}
+            onClick={() => setDbCareerDetail(null)}
             variant="ghost"
-            className="mb-6 text-gray-500 hover:text-gray-800"
+            className="mb-6 dark:text-white dark:hover:bg-zinc-800"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Careers
           </Button>
-          <TryCareerOut
-            careerTitle={dbCareerTryOut.title}
-            tasks={dbCareerTryOut.tasks}
-          />
+
+          {/* Hero */}
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-3xl p-8 md:p-12 shadow-xl mb-8">
+            <div className="flex items-start justify-between mb-4 flex-wrap gap-4">
+              <div>
+                <div className="text-6xl mb-3">{emoji}</div>
+                <h1 className="text-4xl md:text-5xl font-extrabold mb-2">{career.title}</h1>
+                {career.bright_outlook ? (
+                  <span className="inline-block text-sm px-3 py-1 bg-white/20 rounded-full">⭐ Bright Outlook Career</span>
+                ) : null}
+              </div>
+              <div className="text-right">
+                <div className="text-5xl font-extrabold">🚀</div>
+                <div className="text-sm text-purple-100 mt-1">Your Learning Path</div>
+              </div>
+            </div>
+            <p className="text-lg text-purple-100 mb-6 max-w-3xl">{career.description}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center"><div className="text-3xl mb-1">📚</div><div className="text-sm text-purple-100">6 Resources</div></div>
+              <div className="text-center"><div className="text-3xl mb-1">⏱️</div><div className="text-sm text-purple-100">6–12 Months</div></div>
+              <div className="text-center"><div className="text-3xl mb-1">🎯</div><div className="text-sm text-purple-100">Career Ready</div></div>
+              <div className="text-center"><div className="text-3xl mb-1">💡</div><div className="text-sm text-purple-100">{skills.length} Key Skills</div></div>
+            </div>
+          </div>
+
+          {/* Try This Career Out */}
+          <div className="mb-8">
+            <TryCareerOut careerTitle={career.title} tasks={tasks} />
+          </div>
+
+          {/* Learning Modules */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-6 dark:text-white">📖 Your Learning Modules</h2>
+            <div className="space-y-4">
+              {learningLinks.map((link, i) => (
+                <div
+                  key={link.name}
+                  className="flex items-center gap-5 p-5 rounded-2xl border-2 border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-purple-300 hover:shadow-xl transition-all"
+                >
+                  <div className="text-4xl">{link.icon}</div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-lg dark:text-white">{link.name}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{link.desc}</div>
+                    <div className="text-xs text-purple-500 mt-1">{career.title} courses</div>
+                  </div>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+                      Start Learning →
+                    </Button>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Key Skills */}
+          {skills.length > 0 && (
+            <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-orange-50 to-pink-50 dark:from-orange-900/20 dark:to-pink-900/20 border-2 border-orange-100 dark:border-orange-900/40">
+              <h2 className="text-2xl font-bold mb-4 dark:text-white flex items-center gap-2">
+                ⭐ Skills You'll Master 🔥
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">These are the superpowers you'll unlock on this journey!</p>
+              <div className="flex flex-wrap gap-3">
+                {skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-4 py-2 text-base bg-white dark:bg-zinc-900 border-2 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-400 rounded-full font-medium"
+                  >
+                    ✨ {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className="rounded-2xl bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 border-2 border-purple-200 dark:border-purple-800 p-8 text-center">
+            <h3 className="text-2xl font-bold mb-3 dark:text-white">Ready to Start? 🎯</h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-xl mx-auto">
+              Your journey to becoming an amazing {career.title.toLowerCase()} starts now! Let's do this! 💪
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href={`https://www.coursera.org/search?query=${encoded}`} target="_blank" rel="noopener noreferrer">
+                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg rounded-full shadow-lg">
+                  Begin First Course 🚀
+                </Button>
+              </a>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:border-purple-500 dark:text-purple-400 dark:hover:bg-zinc-800 px-8 py-6 text-lg rounded-full"
+                onClick={() => setDbCareerDetail(null)}
+              >
+                Explore More Careers
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -623,7 +733,7 @@ export function CareerExplorer({ onBack, onStartLearning }: { onBack: () => void
           </p>
         </div>
 
-        <BrowseAllCareers onTryOut={(title, tasks) => setDbCareerTryOut({ title, tasks })} />
+        <BrowseAllCareers onTryOut={(title, tasks, career, skills) => setDbCareerDetail({ career, skills, tasks })} />
 
         {/* ── Try It Out: 6 curated careers with interactive tasks ── */}
         <div className="text-center mb-8">
